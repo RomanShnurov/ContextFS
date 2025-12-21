@@ -6,6 +6,8 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
 from .config import Config
+from .prompts import register_prompts
+from .resources import register_resources
 from .tools import register_all_tools
 
 logger = logging.getLogger(__name__)
@@ -22,17 +24,10 @@ def create_server(config: Config) -> Server:
     """
     server = Server(config.server.name)
 
-    # Register server info
-    @server.list_resources()
-    async def list_resources():
-        return []  # Phase 2
-
-    @server.list_prompts()
-    async def list_prompts():
-        return []  # Phase 2
-
-    # Register tools
+    # Register tools, resources, and prompts
     register_all_tools(server, config)
+    register_resources(server, config)
+    register_prompts(server, config)
 
     logger.info(f"Server '{config.server.name}' created")
     logger.info(f"Knowledge root: {config.knowledge.root}")

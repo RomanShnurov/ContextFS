@@ -105,19 +105,23 @@ async def _list_collections(config: Config, path: str) -> dict:
         if item.is_dir():
             doc_count = _count_documents(item, config)
             subcoll_count = sum(1 for x in item.iterdir() if x.is_dir())
-            collections.append({
-                "name": item.name,
-                "path": str(item.relative_to(root)),
-                "document_count": doc_count,
-                "subcollection_count": subcoll_count,
-            })
+            collections.append(
+                {
+                    "name": item.name,
+                    "path": str(item.relative_to(root)),
+                    "document_count": doc_count,
+                    "subcollection_count": subcoll_count,
+                }
+            )
         elif item.suffix.lower() in config.supported_extensions:
             stat = item.stat()
-            documents.append({
-                "name": item.name,
-                "size_bytes": stat.st_size,
-                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            })
+            documents.append(
+                {
+                    "name": item.name,
+                    "size_bytes": stat.st_size,
+                    "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                }
+            )
 
     return {
         "current_path": path,
@@ -153,13 +157,15 @@ async def _find_document(config: Config, query: str, limit: int) -> dict:
             continue
 
         rel_path = file_path.relative_to(root)
-        matches.append({
-            "name": file_path.name,
-            "path": str(rel_path),
-            "collection": str(rel_path.parent) if rel_path.parent != Path(".") else "",
-            "size_bytes": file_path.stat().st_size,
-            "score": score,
-        })
+        matches.append(
+            {
+                "name": file_path.name,
+                "path": str(rel_path),
+                "collection": str(rel_path.parent) if rel_path.parent != Path(".") else "",
+                "size_bytes": file_path.stat().st_size,
+                "score": score,
+            }
+        )
 
     # Sort by score descending
     matches.sort(key=lambda x: x["score"], reverse=True)
@@ -200,4 +206,5 @@ def _count_documents(directory: Path, config: Config) -> int:
 def format_result(result: dict) -> str:
     """Format result as readable string."""
     import json
+
     return json.dumps(result, indent=2, ensure_ascii=False)

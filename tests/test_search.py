@@ -7,10 +7,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from file_knowledge_mcp.config import Config
 from file_knowledge_mcp.errors import ErrorCode, McpError
 from file_knowledge_mcp.search.ugrep import SearchResult, UgrepEngine
-from file_knowledge_mcp.tools.search import _search_documents
+from file_knowledge_mcp.tools.search import _search_documents, _search_multiple
 
 # Enable debug logging for tests
 logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
@@ -22,54 +21,11 @@ logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(me
 
 
 @pytest.fixture
-def search_knowledge_dir(temp_knowledge_dir):
-    """Extend temp_knowledge_dir with search-specific test files."""
-    root = temp_knowledge_dir
-
-    # Ensure directories exist
-    (root / "games").mkdir(exist_ok=True)
-    (root / "games" / "coop").mkdir(exist_ok=True)
-
-    # Create markdown file with searchable content (overwrites the simple one from conftest)
-    (root / "games" / "coop" / "Gloomhaven.md").write_text(
-        "# Gloomhaven Rules\n\n"
-        "## Movement\n\n"
-        "Characters can move up to their movement value.\n"
-        "Movement is affected by terrain and obstacles.\n\n"
-        "## Attack\n\n"
-        "Roll dice to attack enemies.\n"
-        "Attack damage is modified by armor.\n\n"
-        "## Special Abilities\n\n"
-        "Some characters have ranged attacks.\n"
-        "Teleport allows you to move instantly.\n"
-    )
-
-    # Create another markdown file in games/
-    (root / "games" / "Strategy.md").write_text(
-        "# Game Strategy Guide\n\n"
-        "## Combat Strategy\n\n"
-        "Attack weak enemies first.\n"
-        "Use armor to protect your characters.\n\n"
-        "## Movement Strategy\n\n"
-        "Position is everything in combat.\n"
-    )
-
-    # Create a text file
-    (root / "notes.txt").write_text(
-        "Personal notes\n\n"
-        "Remember to attack from range when possible.\n"
-        "Armor is important for defense.\n"
-    )
-
-    return root
-
-
-@pytest.fixture
-def pdf_test_file(search_knowledge_dir):
+def pdf_test_file(rich_knowledge_dir):
     """Create a simple test PDF file."""
     # Note: This creates a dummy PDF file for testing
     # In real scenarios, you'd use a proper PDF library
-    pdf_path = search_knowledge_dir / "games" / "rules.pdf"
+    pdf_path = rich_knowledge_dir / "games" / "rules.pdf"
 
     # Create a minimal valid PDF
     pdf_content = """%PDF-1.4
@@ -139,30 +95,17 @@ startxref
     return pdf_path
 
 
-@pytest.fixture
-def search_config(search_knowledge_dir):
-    """Create config with search-specific knowledge directory."""
-    from file_knowledge_mcp.config import KnowledgeConfig
-    return Config(knowledge=KnowledgeConfig(root=search_knowledge_dir))
-
-
-@pytest.fixture
-def engine(search_config):
-    """Create UgrepEngine instance."""
-    return UgrepEngine(search_config)
-
-
 # ============================================================================
 # UgrepEngine Tests
 # ============================================================================
 
 
 @pytest.mark.asyncio
-async def test_search_simple_query(engine, search_knowledge_dir):
+async def test_search_simple_query(search_engine, rich_knowledge_dir):
     """Test simple search query in markdown files."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="movement",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=2,
         max_results=10,
@@ -176,11 +119,11 @@ async def test_search_simple_query(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_and_operator(engine, search_knowledge_dir):
+async def test_search_and_operator(search_engine, rich_knowledge_dir):
     """Test AND operator (space between words)."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack armor",  # Both words must appear
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -194,11 +137,11 @@ async def test_search_and_operator(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_or_operator(engine, search_knowledge_dir):
+async def test_search_or_operator(search_engine, rich_knowledge_dir):
     """Test OR operator (|)."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="teleport|range",  # Either word
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -212,11 +155,11 @@ async def test_search_or_operator(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_not_operator(engine, search_knowledge_dir):
+async def test_search_not_operator(search_engine, rich_knowledge_dir):
     """Test NOT operator (-)."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack -ranged",  # "attack" but not "ranged"
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -231,11 +174,11 @@ async def test_search_not_operator(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_exact_phrase(engine, search_knowledge_dir):
+async def test_search_exact_phrase(search_engine, rich_knowledge_dir):
     """Test exact phrase search with quotes."""
-    result = await engine.search(
+    result = await search_engine.search(
         query='"movement value"',  # Exact phrase
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -248,11 +191,11 @@ async def test_search_exact_phrase(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_fuzzy_matching(engine, search_knowledge_dir):
+async def test_search_fuzzy_matching(search_engine, rich_knowledge_dir):
     """Test fuzzy search with typos."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="movment",  # Typo: should match "movement" with fuzzy
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -266,11 +209,11 @@ async def test_search_fuzzy_matching(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_context_lines(engine, search_knowledge_dir):
+async def test_search_context_lines(search_engine, rich_knowledge_dir):
     """Test context_lines parameter."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=3,
         max_results=10,
@@ -285,12 +228,12 @@ async def test_search_context_lines(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_max_results_truncation(engine, search_knowledge_dir):
+async def test_search_max_results_truncation(search_engine, rich_knowledge_dir):
     """Test max_results parameter and truncation."""
     max_res = 2
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=max_res,
@@ -304,11 +247,11 @@ async def test_search_max_results_truncation(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_single_document(engine, search_knowledge_dir):
+async def test_search_single_document(search_engine, rich_knowledge_dir):
     """Test search in a single document (non-recursive)."""
-    doc_path = search_knowledge_dir / "games" / "coop" / "Gloomhaven.md"
+    doc_path = rich_knowledge_dir / "games" / "coop" / "Gloomhaven.md"
 
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack",
         path=doc_path,
         recursive=False,
@@ -323,11 +266,11 @@ async def test_search_single_document(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_collection(engine, search_knowledge_dir):
+async def test_search_collection(search_engine, rich_knowledge_dir):
     """Test search in a specific collection."""
-    collection_path = search_knowledge_dir / "games"
+    collection_path = rich_knowledge_dir / "games"
 
-    result = await engine.search(
+    result = await search_engine.search(
         query="attack",
         path=collection_path,
         recursive=True,
@@ -343,11 +286,11 @@ async def test_search_collection(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_no_results(engine, search_knowledge_dir):
+async def test_search_no_results(search_engine, rich_knowledge_dir):
     """Test search with no results."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="nonexistentword123456",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -359,21 +302,21 @@ async def test_search_no_results(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_timeout(engine, search_knowledge_dir, search_config):
+async def test_search_timeout(search_engine, rich_knowledge_dir, rich_config):
     """Test search timeout handling."""
     # Mock the _run_ugrep method to simulate a slow search
     async def slow_search(*args, **kwargs):
         await asyncio.sleep(100)  # Sleep longer than timeout
         return MagicMock(stdout="", stderr="", returncode=0)
 
-    with patch.object(engine, "_run_ugrep", side_effect=slow_search):
+    with patch.object(search_engine, "_run_ugrep", side_effect=slow_search):
         # Set a very short timeout in config
-        search_config.search.timeout_seconds = 1
+        rich_config.search.timeout_seconds = 1
 
         with pytest.raises(McpError) as exc_info:
-            await engine.search(
+            await search_engine.search(
                 query="test",
-                path=search_knowledge_dir,
+                path=rich_knowledge_dir,
                 recursive=True,
             )
 
@@ -381,11 +324,11 @@ async def test_search_timeout(engine, search_knowledge_dir, search_config):
 
 
 @pytest.mark.asyncio
-async def test_search_concurrent_limiting(engine, search_knowledge_dir, search_config):
+async def test_search_concurrent_limiting(search_engine, rich_knowledge_dir, rich_config):
     """Test concurrent search limiting with semaphore."""
     # Set max concurrent searches to 2
-    search_config.limits.max_concurrent_searches = 2
-    engine._semaphore = asyncio.Semaphore(2)
+    rich_config.limits.max_concurrent_searches = 2
+    search_engine._semaphore = asyncio.Semaphore(2)
 
     # Track concurrent execution
     concurrent_count = 0
@@ -405,10 +348,10 @@ async def test_search_concurrent_limiting(engine, search_knowledge_dir, search_c
 
         return MagicMock(stdout="", stderr="", returncode=0)
 
-    with patch.object(engine, "_run_ugrep", side_effect=mock_run_ugrep):
+    with patch.object(search_engine, "_run_ugrep", side_effect=mock_run_ugrep):
         # Launch 5 concurrent searches
         tasks = [
-            engine.search(query=f"test{i}", path=search_knowledge_dir, recursive=True)
+            search_engine.search(query=f"test{i}", path=rich_knowledge_dir, recursive=True)
             for i in range(5)
         ]
         await asyncio.gather(*tasks)
@@ -423,9 +366,9 @@ async def test_search_concurrent_limiting(engine, search_knowledge_dir, search_c
 
 
 @pytest.mark.asyncio
-async def test_search_documents_global_scope(search_config, search_knowledge_dir):
+async def test_search_documents_global_scope(rich_config, rich_knowledge_dir):
     """Test search_documents with global scope."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "attack",
@@ -435,7 +378,7 @@ async def test_search_documents_global_scope(search_config, search_knowledge_dir
         "fuzzy": False,
     }
 
-    result = await _search_documents(search_config, engine, args)
+    result = await _search_documents(rich_config, engine, args)
 
     assert "matches" in result
     assert "total_matches" in result
@@ -444,9 +387,9 @@ async def test_search_documents_global_scope(search_config, search_knowledge_dir
 
 
 @pytest.mark.asyncio
-async def test_search_documents_collection_scope(search_config, search_knowledge_dir):
+async def test_search_documents_collection_scope(rich_config, rich_knowledge_dir):
     """Test search_documents with collection scope."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "movement",
@@ -456,7 +399,7 @@ async def test_search_documents_collection_scope(search_config, search_knowledge
         "fuzzy": False,
     }
 
-    result = await _search_documents(search_config, engine, args)
+    result = await _search_documents(rich_config, engine, args)
 
     assert len(result["matches"]) > 0
     # All matches should be from the games collection
@@ -465,9 +408,9 @@ async def test_search_documents_collection_scope(search_config, search_knowledge
 
 
 @pytest.mark.asyncio
-async def test_search_documents_document_scope(search_config, search_knowledge_dir):
+async def test_search_documents_document_scope(rich_config, rich_knowledge_dir):
     """Test search_documents with document scope."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "attack",
@@ -477,7 +420,7 @@ async def test_search_documents_document_scope(search_config, search_knowledge_d
         "fuzzy": False,
     }
 
-    result = await _search_documents(search_config, engine, args)
+    result = await _search_documents(rich_config, engine, args)
 
     if len(result["matches"]) > 0:
         # All matches should be from the single document
@@ -486,9 +429,9 @@ async def test_search_documents_document_scope(search_config, search_knowledge_d
 
 
 @pytest.mark.asyncio
-async def test_search_documents_path_not_found(search_config, search_knowledge_dir):
+async def test_search_documents_path_not_found(rich_config, rich_knowledge_dir):
     """Test search_documents with non-existent path."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "test",
@@ -499,15 +442,15 @@ async def test_search_documents_path_not_found(search_config, search_knowledge_d
     }
 
     with pytest.raises(McpError) as exc_info:
-        await _search_documents(search_config, engine, args)
+        await _search_documents(rich_config, engine, args)
 
     assert exc_info.value.code == ErrorCode.PATH_NOT_FOUND
 
 
 @pytest.mark.asyncio
-async def test_search_documents_document_not_found(search_config, search_knowledge_dir):
+async def test_search_documents_document_not_found(rich_config, rich_knowledge_dir):
     """Test search_documents with non-existent document."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "test",
@@ -518,15 +461,15 @@ async def test_search_documents_document_not_found(search_config, search_knowled
     }
 
     with pytest.raises(McpError) as exc_info:
-        await _search_documents(search_config, engine, args)
+        await _search_documents(rich_config, engine, args)
 
     assert exc_info.value.code == ErrorCode.DOCUMENT_NOT_FOUND
 
 
 @pytest.mark.asyncio
-async def test_search_documents_custom_context_and_max_results(search_config, search_knowledge_dir):
+async def test_search_documents_custom_context_and_max_results(rich_config, rich_knowledge_dir):
     """Test custom context_lines and max_results parameters."""
-    engine = UgrepEngine(search_config)
+    engine = UgrepEngine(rich_config)
 
     args = {
         "query": "attack",
@@ -536,7 +479,7 @@ async def test_search_documents_custom_context_and_max_results(search_config, se
         "fuzzy": False,
     }
 
-    result = await _search_documents(search_config, engine, args)
+    result = await _search_documents(rich_config, engine, args)
 
     # Should return at most 1 result
     assert len(result["matches"]) <= 1
@@ -550,11 +493,11 @@ async def test_search_documents_custom_context_and_max_results(search_config, se
 
 
 @pytest.mark.asyncio
-async def test_search_pdf_with_filter(engine, pdf_test_file, search_knowledge_dir, search_config):
+async def test_search_pdf_with_filter(search_engine, pdf_test_file, rich_knowledge_dir, rich_config):
     """Test search in PDF files using pdftotext filter."""
     # Check if PDF format is enabled in config
-    if ".pdf" in search_config.supported_extensions:
-        result = await engine.search(
+    if ".pdf" in rich_config.supported_extensions:
+        result = await search_engine.search(
             query="PDF",
             path=pdf_test_file,
             recursive=False,
@@ -568,11 +511,11 @@ async def test_search_pdf_with_filter(engine, pdf_test_file, search_knowledge_di
 
 
 @pytest.mark.asyncio
-async def test_search_multiple_formats(engine, search_knowledge_dir):
+async def test_search_multiple_formats(search_engine, rich_knowledge_dir):
     """Test search across multiple file formats (.md, .txt)."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="armor",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=20,
@@ -592,11 +535,11 @@ async def test_search_multiple_formats(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_empty_query(engine, search_knowledge_dir):
+async def test_search_empty_query(search_engine, rich_knowledge_dir):
     """Test search with empty query."""
-    result = await engine.search(
+    result = await search_engine.search(
         query="",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -607,15 +550,15 @@ async def test_search_empty_query(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_search_special_characters(engine, search_knowledge_dir):
+async def test_search_special_characters(search_engine, rich_knowledge_dir):
     """Test search with special regex characters."""
     # Create a file with special characters
-    test_file = search_knowledge_dir / "special.md"
+    test_file = rich_knowledge_dir / "special.md"
     test_file.write_text("Test [brackets] and (parentheses) and $dollar signs.")
 
-    result = await engine.search(
+    result = await search_engine.search(
         query="brackets",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=1,
         max_results=10,
@@ -626,7 +569,7 @@ async def test_search_special_characters(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_parse_output_with_context(engine):
+async def test_parse_output_with_context(search_engine):
     """Test _parse_output method with context lines."""
     # Simulate ugrep output with context
     stdout = """games/test.md:5:This is a match
@@ -637,7 +580,7 @@ games/other.md:10:Another match
 """
 
     base_path = Path("/tmp/knowledge")
-    matches = engine._parse_output(stdout, base_path)
+    matches = search_engine._parse_output(stdout, base_path)
 
     assert len(matches) >= 1
     if len(matches) > 0:
@@ -647,22 +590,22 @@ games/other.md:10:Another match
 
 
 @pytest.mark.asyncio
-async def test_parse_output_empty(engine):
+async def test_parse_output_empty(search_engine):
     """Test _parse_output with empty output."""
     stdout = ""
     base_path = Path("/tmp/knowledge")
 
-    matches = engine._parse_output(stdout, base_path)
+    matches = search_engine._parse_output(stdout, base_path)
 
     assert len(matches) == 0
 
 
 @pytest.mark.asyncio
-async def test_build_command_recursive(engine, search_knowledge_dir):
+async def test_build_command_recursive(search_engine, rich_knowledge_dir):
     """Test _build_command for recursive search."""
-    cmd = engine._build_command(
+    cmd = search_engine._build_command(
         query="test",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=3,
         fuzzy=False,
@@ -677,11 +620,11 @@ async def test_build_command_recursive(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_build_command_fuzzy(engine, search_knowledge_dir):
+async def test_build_command_fuzzy(search_engine, rich_knowledge_dir):
     """Test _build_command with fuzzy flag."""
-    cmd = engine._build_command(
+    cmd = search_engine._build_command(
         query="test",
-        path=search_knowledge_dir,
+        path=rich_knowledge_dir,
         recursive=True,
         context_lines=2,
         fuzzy=True,
@@ -691,11 +634,11 @@ async def test_build_command_fuzzy(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_build_command_single_file(engine, search_knowledge_dir):
+async def test_build_command_single_file(search_engine, rich_knowledge_dir):
     """Test _build_command for single file search."""
-    file_path = search_knowledge_dir / "games" / "Guide.md"
+    file_path = rich_knowledge_dir / "games" / "Guide.md"
 
-    cmd = engine._build_command(
+    cmd = search_engine._build_command(
         query="test",
         path=file_path,
         recursive=False,
@@ -709,12 +652,12 @@ async def test_build_command_single_file(engine, search_knowledge_dir):
 
 
 @pytest.mark.asyncio
-async def test_diagnostic_ugrep_direct(search_knowledge_dir):
+async def test_diagnostic_ugrep_direct(rich_knowledge_dir):
     """Diagnostic test to check if ugrep works directly."""
     import subprocess
 
     # Create a test file
-    test_file = search_knowledge_dir / "diagnostic.md"
+    test_file = rich_knowledge_dir / "diagnostic.md"
     test_file.write_text("This file contains movement and attack keywords for testing.")
 
     # Try direct ugrep command (no boolean mode)
@@ -730,3 +673,165 @@ async def test_diagnostic_ugrep_direct(search_knowledge_dir):
         f"Direct ugrep failed: rc={result.returncode}, "
         f"stdout={result.stdout}, stderr={result.stderr}"
     )
+
+
+# ============================================================================
+# Phase 2: Parallel Search Tests (search_multiple)
+# ============================================================================
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_basic(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with 3-5 terms."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": ["movement", "attack", "defense"],
+        "context_lines": 2,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    assert "results" in result
+    assert "search_duration_ms" in result
+    assert isinstance(result["search_duration_ms"], int)
+
+    # Check results for each term
+    assert "movement" in result["results"]
+    assert "attack" in result["results"]
+    assert "defense" in result["results"]
+
+    # Movement should be found
+    assert result["results"]["movement"]["found"] is True
+    assert result["results"]["movement"]["match_count"] > 0
+    assert len(result["results"]["movement"]["excerpts"]) > 0
+
+    # Attack should be found
+    assert result["results"]["attack"]["found"] is True
+    assert result["results"]["attack"]["match_count"] > 0
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_five_terms(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with 5 terms to verify parallelization."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": ["movement", "attack", "armor", "teleport", "healing"],
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    assert len(result["results"]) == 5
+
+    # All terms should be processed
+    for term in args["terms"]:
+        assert term in result["results"]
+        assert "found" in result["results"][term]
+        assert "match_count" in result["results"][term]
+        assert "excerpts" in result["results"][term]
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_no_results(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with term that has no matches."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": ["movement", "nonexistent123"],
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    # Movement should be found
+    assert result["results"]["movement"]["found"] is True
+
+    # Nonexistent term should not be found
+    assert result["results"]["nonexistent123"]["found"] is False
+    assert result["results"]["nonexistent123"]["match_count"] == 0
+    assert len(result["results"]["nonexistent123"]["excerpts"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_error_handling(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with non-existent document."""
+    args = {
+        "document_path": "nonexistent/file.md",
+        "terms": ["test"],
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    with pytest.raises(McpError) as exc_info:
+        await _search_multiple(rich_config, search_engine, args)
+
+    assert exc_info.value.code == ErrorCode.DOCUMENT_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_max_terms(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple enforces max 10 terms."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": [f"term{i}" for i in range(15)],  # 15 terms
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    # Should only process first 10 terms
+    assert len(result["results"]) == 10
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_empty_terms(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with empty term list."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": [],
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    assert "error" in result
+    assert result["error"] == "No search terms provided"
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_boolean_operators(rich_config, search_engine, rich_knowledge_dir):
+    """Test search_multiple with boolean operators in terms."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": ["attack armor", "move|teleport", "damage -critical"],
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    # Each term should be processed independently
+    assert len(result["results"]) == 3
+    assert "attack armor" in result["results"]
+    assert "move|teleport" in result["results"]
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_excerpts_limit(rich_config, search_engine, rich_knowledge_dir):
+    """Test that search_multiple limits excerpts to 5 per term."""
+    args = {
+        "document_path": "games/coop/Gloomhaven.md",
+        "terms": ["the"],  # Common word, should have many matches
+        "context_lines": 1,
+        "fuzzy": False,
+    }
+
+    result = await _search_multiple(rich_config, search_engine, args)
+
+    # Even if there are many matches, should only return top 5 excerpts
+    if result["results"]["the"]["found"]:
+        assert len(result["results"]["the"]["excerpts"]) <= 5

@@ -12,16 +12,16 @@ from .server import run_server
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="File-first knowledge base MCP server"
-    )
+    parser = argparse.ArgumentParser(description="File-first knowledge base MCP server")
     parser.add_argument(
-        "--config", "-c",
+        "--config",
+        "-c",
         help="Path to config.yaml",
         default=None,
     )
     parser.add_argument(
-        "--root", "-r",
+        "--root",
+        "-r",
         help="Knowledge base root directory (overrides config)",
         default=None,
     )
@@ -48,6 +48,7 @@ def main():
         # If --root provided without config, create minimal config
         if args.root and not args.config:
             from .config import Config, KnowledgeConfig
+
             config = Config(knowledge=KnowledgeConfig(root=args.root))
         else:
             config = load_config(args.config)

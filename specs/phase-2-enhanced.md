@@ -134,11 +134,11 @@ async def _search_multiple(
 
 ### Checklist
 
-- [ ] Add search_multiple tool definition
-- [ ] Implement parallel search with asyncio.gather
-- [ ] Test with 3-5 terms
-- [ ] Test error handling (one term fails)
-- [ ] Add unit test
+- [x] Add search_multiple tool definition
+- [x] Implement parallel search with asyncio.gather
+- [x] Test with 3-5 terms
+- [x] Test error handling (one term fails)
+- [x] Add unit test
 
 ---
 
@@ -308,12 +308,12 @@ def _parse_outlines(reader: PdfReader, outlines, depth: int = 0) -> list[dict]:
 
 ### Checklist
 
-- [ ] Add get_document_info tool
-- [ ] Implement PDF metadata extraction
-- [ ] Implement TOC extraction from bookmarks
-- [ ] Handle PDFs without bookmarks
-- [ ] Handle non-PDF files
-- [ ] Add unit tests
+- [x] Add get_document_info tool
+- [x] Implement PDF metadata extraction
+- [x] Implement TOC extraction from bookmarks
+- [x] Handle PDFs without bookmarks
+- [x] Handle non-PDF files
+- [x] Add unit tests
 
 ---
 
@@ -445,12 +445,12 @@ class UgrepEngine:
 
 ### Checklist
 
-- [ ] Create search/cache.py
-- [ ] Integrate with UgrepEngine
+- [x] Create search/cache.py
+- [x] Integrate with UgrepEngine
 - [ ] Add cache stats endpoint (optional)
-- [ ] Test cache hit/miss
-- [ ] Test TTL expiration
-- [ ] Test eviction
+- [x] Test cache hit/miss
+- [x] Test TTL expiration
+- [x] Test eviction
 
 ---
 
@@ -604,11 +604,11 @@ def create_server(config: Config) -> Server:
 
 ### Checklist
 
-- [ ] Create resources.py
-- [ ] Register resources in server.py
-- [ ] Test knowledge://index
-- [ ] Test knowledge://{path}/index
-- [ ] Test knowledge://{path}/info
+- [x] Create resources.py
+- [x] Register resources in server.py
+- [x] Test knowledge://index
+- [x] Test knowledge://{path}/index
+- [x] Test knowledge://{path}/info
 - [ ] Test from Claude Desktop
 
 ---
@@ -819,11 +819,11 @@ def create_server(config: Config) -> Server:
 
 ### Checklist
 
-- [ ] Create prompts.py
-- [ ] Register prompts in server.py
-- [ ] Test answer_question prompt
-- [ ] Test summarize_document prompt
-- [ ] Test compare_documents prompt
+- [x] Create prompts.py
+- [x] Register prompts in server.py
+- [x] Test answer_question prompt
+- [x] Test summarize_document prompt
+- [x] Test compare_documents prompt
 - [ ] Verify prompts appear in Claude Desktop
 
 ---
@@ -832,10 +832,10 @@ def create_server(config: Config) -> Server:
 
 Phase 2 is complete when:
 
-- [ ] `search_multiple` searches terms in parallel
-- [ ] `get_document_info` returns metadata and TOC
-- [ ] Search caching reduces repeated search latency
-- [ ] Resources expose knowledge structure (knowledge://...)
-- [ ] Prompts available for common tasks
-- [ ] All new features have tests
+- [x] `search_multiple` searches terms in parallel
+- [x] `get_document_info` returns metadata and TOC
+- [x] Search caching reduces repeated search latency
+- [x] Resources expose knowledge structure (knowledge://...)
+- [x] Prompts available for common tasks
+- [x] All new features have tests
 - [ ] README updated with new features

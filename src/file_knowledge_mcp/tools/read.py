@@ -1,6 +1,7 @@
-"""Read tools: read_document."""
+"""Read tools: read_document, get_document_info."""
 
 import logging
+from datetime import datetime
 from pathlib import Path
 
 from mcp.server import Server
@@ -42,12 +43,30 @@ WARNING: Can return large amounts of text, prefer search when possible.""",
                     "required": ["path"],
                 },
             ),
+            Tool(
+                name="get_document_info",
+                description="""Get document metadata including size, page count, and TOC.
+TOC is only available for PDFs with embedded bookmarks.""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Path to document",
+                        },
+                    },
+                    "required": ["path"],
+                },
+            ),
         ]
 
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         if name == "read_document":
             result = await _read_document(config, arguments)
+            return [TextContent(type="text", text=format_result(result))]
+        elif name == "get_document_info":
+            result = await _get_document_info(config, arguments)
             return [TextContent(type="text", text=format_result(result))]
 
         raise ValueError(f"Unknown tool: {name}")
@@ -77,9 +96,7 @@ async def _read_document(config: Config, args: dict) -> dict:
     ext = full_path.suffix.lower()
 
     if ext == ".pdf":
-        content, total_pages, pages_read = await asyncio.to_thread(
-            _read_pdf, full_path, pages
-        )
+        content, total_pages, pages_read = await asyncio.to_thread(_read_pdf, full_path, pages)
     else:
         content = await asyncio.to_thread(full_path.read_text, encoding="utf-8")
         total_pages = 1
@@ -120,6 +137,110 @@ def _read_pdf(path: Path, pages: list[int]) -> tuple[str, int, list[int]]:
     return "\n".join(text_parts), total_pages, [i + 1 for i in page_indices]
 
 
+async def _get_document_info(config: Config, args: dict) -> dict:
+    """Get document metadata and TOC."""
+    import asyncio
+
+    path = args["path"]
+
+    # Validate path using FileAccessControl
+    access_control = FileAccessControl(config.knowledge.root, config)
+    full_path = access_control.validate_path(path)
+
+    if not full_path.exists():
+        raise document_not_found(path)
+
+    stat = full_path.stat()
+    ext = full_path.suffix.lower()
+
+    info = {
+        "name": full_path.name,
+        "path": path,
+        "collection": str(Path(path).parent) if Path(path).parent != Path(".") else "",
+        "format": ext.lstrip("."),
+        "size_bytes": stat.st_size,
+        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+    }
+
+    if ext == ".pdf":
+        pdf_info = await asyncio.to_thread(_extract_pdf_info, full_path)
+        info.update(pdf_info)
+    else:
+        # For text files, count lines
+        content = await asyncio.to_thread(full_path.read_text, encoding="utf-8")
+        info["pages"] = 1
+        info["lines"] = content.count("\n") + 1
+        info["has_toc"] = False
+        info["toc"] = None
+
+    return info
+
+
+def _extract_pdf_info(path: Path) -> dict:
+    """Extract PDF metadata and TOC."""
+    reader = PdfReader(path)
+
+    info = {
+        "pages": len(reader.pages),
+        "has_toc": False,
+        "toc": None,
+    }
+
+    # Try to extract TOC from outlines (bookmarks)
+    try:
+        outlines = reader.outline
+        if outlines:
+            info["has_toc"] = True
+            info["toc"] = _parse_outlines(reader, outlines)
+    except Exception:
+        pass  # Some PDFs don't have valid outlines
+
+    # PDF metadata
+    if reader.metadata:
+        meta = reader.metadata
+        info["title"] = meta.get("/Title", None)
+        info["author"] = meta.get("/Author", None)
+
+    return info
+
+
+def _parse_outlines(reader: PdfReader, outlines, depth: int = 0) -> list[dict]:
+    """Recursively parse PDF outlines into TOC structure."""
+    if depth > 5:  # Limit depth
+        return []
+
+    toc = []
+
+    for item in outlines:
+        if isinstance(item, list):
+            # Nested outlines
+            if toc:
+                toc[-1]["children"] = _parse_outlines(reader, item, depth + 1)
+        else:
+            # Outline item
+            entry = {
+                "title": item.title if hasattr(item, "title") else str(item),
+                "page": None,
+            }
+
+            # Try to get page number
+            try:
+                if hasattr(item, "page"):
+                    page_obj = item.page
+                    if page_obj:
+                        for i, page in enumerate(reader.pages):
+                            if page == page_obj:
+                                entry["page"] = i + 1
+                                break
+            except Exception:
+                pass
+
+            toc.append(entry)
+
+    return toc
+
+
 def format_result(result: dict) -> str:
     import json
+
     return json.dumps(result, indent=2, ensure_ascii=False)

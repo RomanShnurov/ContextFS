@@ -79,9 +79,7 @@ class FilterSecurity:
                 or executable in self.security_config.blocked_filter_commands
             )
             if blocked:
-                logger.warning(
-                    f"Filter command '{command}' is in blacklist"
-                )
+                logger.warning(f"Filter command '{command}' is in blacklist")
             return not blocked
 
         logger.warning(f"Unknown security mode: {self.security_config.filter_security_mode}")

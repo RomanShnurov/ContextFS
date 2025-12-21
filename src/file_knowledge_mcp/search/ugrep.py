@@ -10,6 +10,7 @@ from pathlib import Path
 from ..config import Config
 from ..errors import search_timeout
 from ..security import FilterSecurity
+from .cache import SearchCache
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,9 @@ class SearchResult:
 class UgrepEngine:
     """Ugrep-based search engine."""
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, cache: SearchCache | None = None):
         self.config = config
+        self.cache = cache or SearchCache()
         self._semaphore = asyncio.Semaphore(config.limits.max_concurrent_searches)
         self._filter_security = FilterSecurity(config)
 
@@ -72,6 +74,45 @@ class UgrepEngine:
         context = context_lines or self.config.search.context_lines
         max_res = max_results or self.config.search.max_results
 
+        # Check cache first
+        cached = await self.cache.get(
+            query,
+            str(path),
+            recursive=recursive,
+            context_lines=context,
+            max_results=max_res,
+            fuzzy=fuzzy,
+        )
+        if cached is not None:
+            logger.debug(f"Cache hit for query: {query}")
+            return cached
+
+        # Execute search
+        result = await self._execute_search(query, path, recursive, context, max_res, fuzzy)
+
+        # Cache result
+        await self.cache.set(
+            query,
+            str(path),
+            result,
+            recursive=recursive,
+            context_lines=context,
+            max_results=max_res,
+            fuzzy=fuzzy,
+        )
+
+        return result
+
+    async def _execute_search(
+        self,
+        query: str,
+        path: Path,
+        recursive: bool,
+        context: int,
+        max_res: int,
+        fuzzy: bool,
+    ) -> SearchResult:
+        """Execute the actual search (without caching)."""
         # Build command
         cmd = self._build_command(query, path, recursive, context, fuzzy)
         logger.debug(f"Executing: {' '.join(cmd)}")
@@ -126,8 +167,8 @@ class UgrepEngine:
                 # Use glob pattern for each extension
                 for ext in extensions:
                     # Ensure extension starts with dot
-                    if not ext.startswith('.'):
-                        ext = f'.{ext}'
+                    if not ext.startswith("."):
+                        ext = f".{ext}"
                     cmd.extend(["--include", f"*{ext}"])
             # PDF filter - validate security before using
             if ".pdf" in self.config.supported_extensions:
@@ -195,7 +236,7 @@ class UgrepEngine:
             if ":" in line:
                 # Match pattern: (path):(digits):(text)
                 # Use non-greedy match for path to handle Windows paths correctly
-                match = re.match(r'^(.+?):(\d+):(.*)$', line)
+                match = re.match(r"^(.+?):(\d+):(.*)$", line)
                 if match:
                     file_path = match.group(1)
                     line_num = match.group(2)
@@ -226,7 +267,7 @@ class UgrepEngine:
             if not is_match_line and "-" in line:
                 # Context lines use - instead of :
                 # Match pattern: (path)-(digits)-(text)
-                match = re.match(r'^(.+?)-(\d+)-(.*)$', line)
+                match = re.match(r"^(.+?)-(\d+)-(.*)$", line)
                 if match:
                     text = match.group(3)
                     is_context_line = True

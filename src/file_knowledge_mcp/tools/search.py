@@ -76,12 +76,47 @@ Scope controls where to search:
                     "required": ["query", "scope"],
                 },
             ),
+            Tool(
+                name="search_multiple",
+                description="""Search for multiple terms in parallel within a document.
+More efficient than calling search_documents multiple times.
+Useful for complex questions involving several concepts.
+
+Each term can use boolean syntax (space=AND, |=OR, -=NOT).""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "document_path": {
+                            "type": "string",
+                            "description": "Path to document",
+                        },
+                        "terms": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of search terms (max 10)",
+                            "maxItems": 10,
+                        },
+                        "context_lines": {
+                            "type": "integer",
+                            "default": 5,
+                        },
+                        "fuzzy": {
+                            "type": "boolean",
+                            "default": False,
+                        },
+                    },
+                    "required": ["document_path", "terms"],
+                },
+            ),
         ]
 
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         if name == "search_documents":
             result = await _search_documents(config, engine, arguments)
+            return [TextContent(type="text", text=format_result(result))]
+        elif name == "search_multiple":
+            result = await _search_multiple(config, engine, arguments)
             return [TextContent(type="text", text=format_result(result))]
 
         raise ValueError(f"Unknown tool: {name}")
@@ -131,13 +166,15 @@ async def _search_documents(config: Config, engine: UgrepEngine, args: dict) -> 
     # Format for response
     matches = []
     for match in result.matches:
-        matches.append({
-            "document": match.file,
-            "line": match.line_number,
-            "text": match.text,
-            "context_before": match.context_before,
-            "context_after": match.context_after,
-        })
+        matches.append(
+            {
+                "document": match.file,
+                "line": match.line_number,
+                "text": match.text,
+                "context_before": match.context_before,
+                "context_after": match.context_after,
+            }
+        )
 
     return {
         "matches": matches,
@@ -146,6 +183,80 @@ async def _search_documents(config: Config, engine: UgrepEngine, args: dict) -> 
     }
 
 
+async def _search_multiple(
+    config: Config,
+    engine: UgrepEngine,
+    args: dict,
+) -> dict:
+    """Search multiple terms in parallel."""
+    import asyncio
+    import time
+
+    document_path = args["document_path"]
+    terms = args["terms"]
+    context_lines = args.get("context_lines", 5)
+    fuzzy = args.get("fuzzy", False)
+
+    if not terms:
+        return {"error": "No search terms provided"}
+
+    if len(terms) > 10:
+        terms = terms[:10]
+
+    # Validate path using FileAccessControl
+    access_control = FileAccessControl(config.knowledge.root, config)
+    full_path = access_control.validate_path(document_path)
+
+    if not full_path.exists():
+        raise document_not_found(document_path)
+
+    start_time = time.monotonic()
+
+    # Launch all searches in parallel
+    tasks = [
+        engine.search(
+            query=term,
+            path=full_path,
+            recursive=False,
+            context_lines=context_lines,
+            max_results=10,  # Limit per-term
+            fuzzy=fuzzy,
+        )
+        for term in terms
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Build result dictionary
+    result_dict = {}
+    for term, result in zip(terms, results):
+        if isinstance(result, Exception):
+            result_dict[term] = {
+                "found": False,
+                "error": str(result),
+            }
+        else:
+            result_dict[term] = {
+                "found": result.total_matches > 0,
+                "match_count": result.total_matches,
+                "excerpts": [
+                    {
+                        "text": m.text,
+                        "line": m.line_number,
+                    }
+                    for m in result.matches[:5]  # Top 5 per term
+                ],
+            }
+
+    duration_ms = int((time.monotonic() - start_time) * 1000)
+
+    return {
+        "results": result_dict,
+        "search_duration_ms": duration_ms,
+    }
+
+
 def format_result(result: dict) -> str:
     import json
+
     return json.dumps(result, indent=2, ensure_ascii=False)

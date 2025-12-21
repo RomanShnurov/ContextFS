@@ -29,12 +29,14 @@ class SearchConfig(BaseModel):
 class ExcludeConfig(BaseModel):
     """File exclusion settings."""
 
-    patterns: list[str] = Field(default_factory=lambda: [
-        ".git/*",
-        "__pycache__/*",
-        "*.draft.*",
-        "_archive/*",
-    ])
+    patterns: list[str] = Field(
+        default_factory=lambda: [
+            ".git/*",
+            "__pycache__/*",
+            "*.draft.*",
+            "_archive/*",
+        ]
+    )
     hidden_files: bool = True
 
 
@@ -138,20 +140,22 @@ class Config(BaseSettings):
     exclude: ExcludeConfig = Field(default_factory=ExcludeConfig)
     limits: LimitsConfig = Field(default_factory=LimitsConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
-    formats: dict[str, FormatConfig] = Field(default_factory=lambda: {
-        "pdf": FormatConfig(
-            extensions=[".pdf"],
-            filter="pdftotext - -",
-        ),
-        "markdown": FormatConfig(
-            extensions=[".md", ".markdown"],
-            filter=None,
-        ),
-        "text": FormatConfig(
-            extensions=[".txt", ".rst"],
-            filter=None,
-        ),
-    })
+    formats: dict[str, FormatConfig] = Field(
+        default_factory=lambda: {
+            "pdf": FormatConfig(
+                extensions=[".pdf"],
+                filter="pdftotext - -",
+            ),
+            "markdown": FormatConfig(
+                extensions=[".md", ".markdown"],
+                filter=None,
+            ),
+            "text": FormatConfig(
+                extensions=[".txt", ".rst"],
+                filter=None,
+            ),
+        }
+    )
 
     @property
     def supported_extensions(self) -> set[str]:
@@ -172,6 +176,7 @@ class Config(BaseSettings):
 
 class ConfigError(Exception):
     """Configuration loading error."""
+
     pass
 
 
