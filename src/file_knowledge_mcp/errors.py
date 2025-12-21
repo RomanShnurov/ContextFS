@@ -25,6 +25,7 @@ class ErrorCode(str, Enum):
     # Limit errors (4xxx)
     FILE_TOO_LARGE = "4001"
     RESULT_TRUNCATED = "4002"
+    RATE_LIMITED = "4003"
 
     # Security errors (5xxx)
     SECURITY_VIOLATION = "5001"
@@ -89,7 +90,7 @@ def search_engine_error(message: str, details: str | None = None) -> McpError:
     return McpError(
         code=ErrorCode.SEARCH_ENGINE_ERROR,
         message=f"Search engine error: {message}",
-        data={"details": details} if details else {},
+        data={"details": details, "stderr": details} if details else {},
     )
 
 
@@ -98,4 +99,44 @@ def file_too_large(path: str, size_mb: float, max_mb: int) -> McpError:
         code=ErrorCode.FILE_TOO_LARGE,
         message=f"File too large: {size_mb:.1f}MB (max: {max_mb}MB)",
         data={"path": path, "size_mb": size_mb, "max_mb": max_mb},
+    )
+
+
+def collection_not_found(path: str) -> McpError:
+    """Collection not found error."""
+    return McpError(
+        code=ErrorCode.COLLECTION_NOT_FOUND,
+        message=f"Collection not found: {path}",
+        data={"path": path},
+    )
+
+
+def format_not_supported(path: str, format_ext: str, supported_formats: list[str]) -> McpError:
+    """Format not supported error."""
+    return McpError(
+        code=ErrorCode.FORMAT_NOT_SUPPORTED,
+        message=f"File format not supported: {format_ext}",
+        data={
+            "path": path,
+            "format": format_ext,
+            "supported_formats": supported_formats,
+        },
+    )
+
+
+def invalid_query(query: str, reason: str) -> McpError:
+    """Invalid search query error."""
+    return McpError(
+        code=ErrorCode.INVALID_QUERY,
+        message=f"Invalid search query: {reason}",
+        data={"query": query, "reason": reason},
+    )
+
+
+def rate_limited(retry_after_seconds: int) -> McpError:
+    """Rate limited error."""
+    return McpError(
+        code=ErrorCode.RATE_LIMITED,
+        message="Too many requests",
+        data={"retry_after_seconds": retry_after_seconds},
     )

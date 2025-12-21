@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import Config
-from ..errors import search_timeout
+from ..errors import search_engine_error, search_timeout
 from ..security import FilterSecurity
 from .cache import SearchCache, SmartSearchCache
 
@@ -159,8 +159,8 @@ class UgrepEngine:
                     self._run_ugrep(cmd),
                     timeout=self.config.search.timeout_seconds,
                 )
-            except TimeoutError:
-                raise search_timeout(query, self.config.search.timeout_seconds)
+            except TimeoutError as e:
+                raise search_timeout(query, self.config.search.timeout_seconds) from e
 
         matches = self._parse_output(result.stdout, self.config.knowledge.root)
         truncated = len(matches) > max_res
@@ -240,6 +240,16 @@ class UgrepEngine:
         logger.debug(f"ugrep stderr: {result.stderr}")
         if result.stdout:
             logger.debug(f"ugrep stdout preview: {result.stdout[:500]}")
+
+        # Check for errors (returncode 0 = matches found, 1 = no matches, >1 = error)
+        if result.returncode > 1:
+            stderr_output = result.stderr.strip() if result.stderr else ""
+            logger.error(f"ugrep failed with code {result.returncode}: {stderr_output}")
+            raise search_engine_error(
+                f"ugrep exited with code {result.returncode}",
+                details=stderr_output,
+            )
+
         return result
 
     def _parse_output(self, stdout: str, base_path: Path) -> list[SearchMatch]:

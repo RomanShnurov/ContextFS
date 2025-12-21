@@ -182,3 +182,43 @@ async def test_get_document_info_root_level_file(temp_knowledge_dir, rich_config
     result = await _get_document_info(rich_config, args)
 
     assert result["collection"] == ""  # No collection for root-level files
+
+
+@pytest.mark.asyncio
+async def test_read_document_file_too_large(temp_knowledge_dir, config):
+    """Test FILE_TOO_LARGE error when document exceeds size limit."""
+    from unittest.mock import MagicMock, patch
+
+    # Create a regular file
+    large_file = temp_knowledge_dir / "large.txt"
+    large_file.write_text("content")
+
+    # Get real stat for the file to preserve other attributes
+    real_stat = large_file.stat()
+
+    # Mock stat to simulate large file size (2MB when limit is 1MB)
+    with patch("pathlib.Path.stat") as mock_stat, patch("pathlib.Path.lstat") as mock_lstat:
+        # Create a mock stat result with all necessary attributes
+        mock_stat_result = MagicMock()
+        mock_stat_result.st_size = 2 * 1024 * 1024  # 2MB
+        mock_stat_result.st_mode = real_stat.st_mode  # Use real mode to avoid symlink issues
+        mock_stat_result.st_mtime = real_stat.st_mtime
+
+        mock_stat.return_value = mock_stat_result
+        mock_lstat.return_value = mock_stat_result
+
+        # Temporarily set max file size to 1MB
+        original_max = config.search.max_file_size_mb
+        config.search.max_file_size_mb = 1
+
+        try:
+            with pytest.raises(McpError) as exc_info:
+                await _read_document(config, {"path": "large.txt", "pages": []})
+
+            assert exc_info.value.code == ErrorCode.FILE_TOO_LARGE
+            assert "too large" in exc_info.value.message.lower()
+            assert exc_info.value.data["size_mb"] == 2.0
+            assert exc_info.value.data["max_mb"] == 1
+        finally:
+            # Restore original config
+            config.search.max_file_size_mb = original_max
