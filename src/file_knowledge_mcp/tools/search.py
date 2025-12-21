@@ -8,6 +8,7 @@ from mcp.types import TextContent, Tool
 from ..config import Config
 from ..errors import document_not_found, path_not_found
 from ..search.ugrep import UgrepEngine
+from ..security import FileAccessControl
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ async def _search_documents(config: Config, engine: UgrepEngine, args: dict) -> 
     fuzzy = args.get("fuzzy", False)
 
     root = config.knowledge.root
+    access_control = FileAccessControl(root, config)
 
     # Resolve path based on scope
     if scope_type == "global":
@@ -103,13 +105,13 @@ async def _search_documents(config: Config, engine: UgrepEngine, args: dict) -> 
         recursive = True
     elif scope_type == "collection":
         path = scope.get("path", "")
-        search_path = root / path
+        search_path = access_control.validate_path(path) if path else root
         if not search_path.exists():
             raise path_not_found(path)
         recursive = True
     elif scope_type == "document":
         path = scope.get("path", "")
-        search_path = root / path
+        search_path = access_control.validate_path(path)
         if not search_path.exists():
             raise document_not_found(path)
         recursive = False

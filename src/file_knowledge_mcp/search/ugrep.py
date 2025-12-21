@@ -9,6 +9,7 @@ from pathlib import Path
 
 from ..config import Config
 from ..errors import search_timeout
+from ..security import FilterSecurity
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class UgrepEngine:
     def __init__(self, config: Config):
         self.config = config
         self._semaphore = asyncio.Semaphore(config.limits.max_concurrent_searches)
+        self._filter_security = FilterSecurity(config)
 
     async def search(
         self,
@@ -127,15 +129,19 @@ class UgrepEngine:
                     if not ext.startswith('.'):
                         ext = f'.{ext}'
                     cmd.extend(["--include", f"*{ext}"])
-            # PDF filter
+            # PDF filter - validate security before using
             if ".pdf" in self.config.supported_extensions:
                 pdf_filter = self.config.get_filter_for_extension(".pdf")
-                if pdf_filter:
+                if pdf_filter and self._filter_security.validate_filter_command(pdf_filter):
                     cmd.append(f"--filter=pdf:{pdf_filter}")
+                elif pdf_filter:
+                    logger.warning(f"PDF filter blocked by security policy: {pdf_filter}")
         elif path.is_file() and path.suffix.lower() == ".pdf":
             pdf_filter = self.config.get_filter_for_extension(".pdf")
-            if pdf_filter:
+            if pdf_filter and self._filter_security.validate_filter_command(pdf_filter):
                 cmd.append(f"--filter=pdf:{pdf_filter}")
+            elif pdf_filter:
+                logger.warning(f"PDF filter blocked by security policy: {pdf_filter}")
 
         cmd.append(query)
         cmd.append(str(path))

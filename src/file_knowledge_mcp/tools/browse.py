@@ -10,6 +10,7 @@ from mcp.types import TextContent, Tool
 
 from ..config import Config
 from ..errors import path_not_found
+from ..security import FileAccessControl
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,13 @@ Supports partial matching.""",
 async def _list_collections(config: Config, path: str) -> dict:
     """List collections at path."""
     root = config.knowledge.root
-    target = root / path if path else root
+
+    # Validate path using FileAccessControl
+    access_control = FileAccessControl(root, config)
+    if path:
+        target = access_control.validate_path(path)
+    else:
+        target = root
 
     if not target.exists():
         raise path_not_found(path)

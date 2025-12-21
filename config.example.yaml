@@ -42,3 +42,40 @@ formats:
 limits:
   max_concurrent_searches: 4
   max_document_read_chars: 100000
+
+# Optional: security settings (Phase 1 enhancements)
+security:
+  # Filter command security
+  enable_shell_filters: true
+  filter_security_mode: "whitelist"  # whitelist | blacklist | disabled
+
+  # Whitelist of allowed filter commands
+  # Add full paths or command names that should be allowed
+  allowed_filter_commands:
+    - "pdftotext"
+    - "pdftotext - -"
+    - "pandoc"
+    - "/usr/bin/pdftotext"
+    - "/usr/local/bin/pdftotext"
+    - "/opt/homebrew/bin/pdftotext"
+    # Add your custom filter commands here
+
+  # Blacklist (only used when filter_security_mode is "blacklist")
+  blocked_filter_commands: []
+
+  # Sandboxing and limits
+  sandbox_filters: true           # Run filters in restricted environment
+  filter_timeout_seconds: 30      # Timeout for filter execution
+  max_filter_memory_mb: 512       # Memory limit (platform-dependent)
+
+  # Path security
+  restrict_to_knowledge_root: true  # Prevent path traversal attacks
+  follow_symlinks: false            # Disallow following symbolic links
+
+# Environment variable overrides:
+# All settings can be overridden using environment variables with FKM_ prefix
+# Examples:
+#   FKM_KNOWLEDGE__ROOT=/path/to/docs
+#   FKM_SECURITY__ENABLE_SHELL_FILTERS=false
+#   FKM_SECURITY__FILTER_SECURITY_MODE=disabled
+#   FKM_SEARCH__MAX_RESULTS=100

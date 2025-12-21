@@ -45,6 +45,61 @@ class LimitsConfig(BaseModel):
     max_document_read_chars: int = Field(default=100_000, ge=1000)
 
 
+class SecurityConfig(BaseModel):
+    """Security settings for filter commands and file access."""
+
+    # Filter command security
+    enable_shell_filters: bool = Field(
+        default=True,
+        description="Global toggle for shell filter execution",
+    )
+    filter_security_mode: Literal["whitelist", "blacklist", "disabled"] = Field(
+        default="whitelist",
+        description="Security mode for filter commands",
+    )
+    allowed_filter_commands: list[str] = Field(
+        default_factory=lambda: [
+            "pdftotext",
+            "pdftotext - -",
+            "pandoc",
+            "/usr/bin/pdftotext",
+            "/usr/local/bin/pdftotext",
+            "/opt/homebrew/bin/pdftotext",
+        ],
+        description="Whitelist of allowed filter commands and executables",
+    )
+    blocked_filter_commands: list[str] = Field(
+        default_factory=list,
+        description="Blacklist of blocked filter commands (when using blacklist mode)",
+    )
+    sandbox_filters: bool = Field(
+        default=True,
+        description="Run filters in restricted environment (platform-dependent)",
+    )
+    filter_timeout_seconds: int = Field(
+        default=30,
+        ge=5,
+        le=300,
+        description="Timeout for filter command execution",
+    )
+    max_filter_memory_mb: int = Field(
+        default=512,
+        ge=64,
+        le=4096,
+        description="Memory limit for filter processes (not enforced on all platforms)",
+    )
+
+    # Path traversal protection
+    restrict_to_knowledge_root: bool = Field(
+        default=True,
+        description="Prevent access to files outside knowledge root directory",
+    )
+    follow_symlinks: bool = Field(
+        default=False,
+        description="Allow following symbolic links",
+    )
+
+
 class ServerConfig(BaseModel):
     """Server metadata."""
 
@@ -82,6 +137,7 @@ class Config(BaseSettings):
     search: SearchConfig = Field(default_factory=SearchConfig)
     exclude: ExcludeConfig = Field(default_factory=ExcludeConfig)
     limits: LimitsConfig = Field(default_factory=LimitsConfig)
+    security: SecurityConfig = Field(default_factory=SecurityConfig)
     formats: dict[str, FormatConfig] = Field(default_factory=lambda: {
         "pdf": FormatConfig(
             extensions=[".pdf"],

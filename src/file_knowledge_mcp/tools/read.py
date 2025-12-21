@@ -9,6 +9,7 @@ from pypdf import PdfReader
 
 from ..config import Config
 from ..errors import document_not_found, file_too_large
+from ..security import FileAccessControl
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,9 @@ async def _read_document(config: Config, args: dict) -> dict:
     path = args["path"]
     pages = args.get("pages", [])
 
-    full_path = config.knowledge.root / path
+    # Validate path using FileAccessControl
+    access_control = FileAccessControl(config.knowledge.root, config)
+    full_path = access_control.validate_path(path)
 
     if not full_path.exists():
         raise document_not_found(path)

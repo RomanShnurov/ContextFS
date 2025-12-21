@@ -26,6 +26,14 @@ class ErrorCode(str, Enum):
     FILE_TOO_LARGE = "4001"
     RESULT_TRUNCATED = "4002"
 
+    # Security errors (5xxx)
+    SECURITY_VIOLATION = "5001"
+    PATH_TRAVERSAL_DETECTED = "5002"
+    SYMLINK_NOT_ALLOWED = "5003"
+    INVALID_PATH = "5004"
+    FILTER_TIMEOUT = "5005"
+    FILTER_EXECUTION_ERROR = "5006"
+
 
 class McpError(Exception):
     """Base error with MCP-compatible response."""
