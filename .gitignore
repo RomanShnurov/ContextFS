@@ -222,4 +222,6 @@ CLAUDE.md
 #other
 documents/
 test_docs/
+specs/
 config.yaml
+*.code-workspace
