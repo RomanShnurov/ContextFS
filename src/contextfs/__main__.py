@@ -2,6 +2,7 @@
 
 import argparse
 import asyncio
+import contextlib
 import logging
 import sys
 
@@ -67,10 +68,8 @@ def main() -> None:
     )
 
     # Run server
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         asyncio.run(run_server(config))
-    except KeyboardInterrupt:
-        pass
 
 
 if __name__ == "__main__":

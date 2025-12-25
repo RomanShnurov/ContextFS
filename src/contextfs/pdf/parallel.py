@@ -1,6 +1,7 @@
 """Parallel PDF processing for improved performance."""
 
 import asyncio
+import contextlib
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -257,7 +258,5 @@ class ParallelPDFProcessor:
 
     def __del__(self):
         """Cleanup on deletion."""
-        try:
+        with contextlib.suppress(Exception):
             self._executor.shutdown(wait=False)
-        except Exception:
-            pass

@@ -1,6 +1,7 @@
 """File system watcher for automatic index updates."""
 
 import asyncio
+import contextlib
 import logging
 from collections.abc import Callable
 from pathlib import Path
@@ -84,17 +85,13 @@ class FileWatcher:
 
         if self._watcher_task and not self._watcher_task.done():
             self._watcher_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._watcher_task
-            except asyncio.CancelledError:
-                pass
 
         if self._debounce_task and not self._debounce_task.done():
             self._debounce_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._debounce_task
-            except asyncio.CancelledError:
-                pass
 
     def _filter_changes(self, changes: set) -> list[Path]:
         """Filter file changes to only include relevant files.
@@ -130,14 +127,11 @@ class FileWatcher:
                 continue
 
             # Filter by extension if specified
-            if self.watch_extensions:
-                if path.suffix.lower() not in self.watch_extensions:
-                    continue
+            if self.watch_extensions and path.suffix.lower() not in self.watch_extensions:
+                continue
 
             # Skip deleted files for extension check (they don't exist)
-            if change_type == Change.deleted:
-                changed_paths.append(path)
-            elif path.exists():
+            if change_type == Change.deleted or path.exists():
                 changed_paths.append(path)
 
         return changed_paths
@@ -231,10 +225,8 @@ class WatcherManager:
 
         if self._background_task and not self._background_task.done():
             self._background_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._background_task
-            except asyncio.CancelledError:
-                pass
 
         logger.info("Stopped file watcher")
 

@@ -115,7 +115,7 @@ def pdf_with_toc(rich_knowledge_dir):
     writer = PdfWriter()
 
     # Add 3 pages
-    for i in range(3):
+    for _i in range(3):
         writer.add_blank_page(width=612, height=792)
 
     # Add metadata

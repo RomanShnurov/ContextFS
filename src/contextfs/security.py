@@ -134,7 +134,7 @@ class FilterSecurity:
                 code=ErrorCode.FILTER_TIMEOUT,
                 message=f"Filter command timed out after {timeout}s",
                 data={"command": command, "timeout_seconds": timeout},
-            )
+            ) from None
         except subprocess.CalledProcessError as e:
             logger.error(f"Filter command failed: {command} - {e}")
             raise McpError(
@@ -145,14 +145,14 @@ class FilterSecurity:
                     "return_code": e.returncode,
                     "stderr": e.stderr.decode("utf-8", errors="replace") if e.stderr else None,
                 },
-            )
+            ) from e
         except Exception as e:
             logger.error(f"Unexpected error executing filter: {command} - {e}")
             raise McpError(
                 code=ErrorCode.FILTER_EXECUTION_ERROR,
                 message=f"Filter execution error: {e}",
                 data={"command": command, "error": str(e)},
-            )
+            ) from e
 
     def _execute_filter(self, command: str, input_data: bytes) -> bytes:
         """Execute filter command in subprocess.
@@ -233,7 +233,7 @@ class FileAccessControl:
                 code=ErrorCode.INVALID_PATH,
                 message=f"Invalid path: {requested_path}",
                 data={"path": str(requested_path), "error": str(e)},
-            )
+            ) from e
 
         # Security check: Ensure path is within knowledge root
         if self.security_config.restrict_to_knowledge_root:
@@ -254,7 +254,7 @@ class FileAccessControl:
                         "knowledge_root": str(self.knowledge_root),
                         "reason": "Path resolves outside knowledge root directory",
                     },
-                )
+                ) from None
 
         # Symlink policy check
         if not self.security_config.follow_symlinks:

@@ -25,7 +25,7 @@ def sample_pdf(tmp_path):
     # Add pages with text
     from pypdf import PageObject
 
-    for i in range(5):
+    for _i in range(5):
         page = PageObject.create_blank_page(width=612, height=792)
         writer.add_page(page)
 
@@ -144,7 +144,7 @@ class TestParallelProcessing:
         """Test that parallel processing is faster (conceptual test)."""
         # Create a PDF with many pages
         writer = PdfWriter()
-        for i in range(20):
+        for _i in range(20):
             from pypdf import PageObject
 
             page = PageObject.create_blank_page(width=612, height=792)
@@ -276,14 +276,14 @@ class TestErrorHandling:
         """Test extraction from nonexistent file."""
         nonexistent = tmp_path / "nonexistent.pdf"
 
-        with pytest.raises(Exception):
+        with pytest.raises(FileNotFoundError):
             await pdf_processor.extract_text_parallel(nonexistent)
 
     async def test_metadata_nonexistent_pdf(self, pdf_processor, tmp_path):
         """Test metadata extraction from nonexistent file."""
         nonexistent = tmp_path / "nonexistent.pdf"
 
-        with pytest.raises(Exception):
+        with pytest.raises(FileNotFoundError):
             await pdf_processor.extract_metadata(nonexistent)
 
 

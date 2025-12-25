@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from mcp.server import Server
 from mcp.types import TextContent, Tool
 
 from ..config import Config
@@ -81,10 +80,7 @@ async def _list_collections(config: Config, path: str) -> dict:
 
     # Validate path using FileAccessControl
     access_control = FileAccessControl(root, config)
-    if path:
-        target = access_control.validate_path(path)
-    else:
-        target = root
+    target = access_control.validate_path(path) if path else root
 
     if not target.exists():
         raise path_not_found(path)
@@ -195,9 +191,8 @@ def _count_documents(directory: Path, config: Config) -> int:
     """Count documents in directory (non-recursive)."""
     count = 0
     for item in directory.iterdir():
-        if item.is_file() and item.suffix.lower() in config.supported_extensions:
-            if not _should_exclude(item, config):
-                count += 1
+        if item.is_file() and item.suffix.lower() in config.supported_extensions and not _should_exclude(item, config):
+            count += 1
     return count
 
 

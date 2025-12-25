@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from mcp.server import Server
 from mcp.types import TextContent, Tool
 from pypdf import PdfReader
 

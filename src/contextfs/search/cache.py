@@ -197,7 +197,7 @@ class SmartSearchCache(SearchCache):
                     continue
 
                 # Check if any tracked file is in the invalidated path
-                for file_path in entry.file_mtimes.keys():
+                for file_path in entry.file_mtimes:
                     if file_path.startswith(search_path_str):
                         to_remove.append(key)
                         break
@@ -224,10 +224,7 @@ class SmartSearchCache(SearchCache):
 
         try:
             # Resolve path
-            if Path(path).is_absolute():
-                full_path = Path(path)
-            else:
-                full_path = self.knowledge_root / path
+            full_path = Path(path) if Path(path).is_absolute() else self.knowledge_root / path
 
             # Collect mtimes
             if full_path.is_file():

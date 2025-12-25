@@ -136,7 +136,7 @@ async def test_get_document_info_nested_toc(rich_knowledge_dir, rich_config):
     writer = PdfWriter()
 
     # Add pages
-    for i in range(5):
+    for _i in range(5):
         writer.add_blank_page(width=612, height=792)
 
     # Create nested TOC

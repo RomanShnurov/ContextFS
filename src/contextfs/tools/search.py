@@ -2,7 +2,6 @@
 
 import logging
 
-from mcp.server import Server
 from mcp.types import TextContent, Tool
 
 from ..config import Config
@@ -227,7 +226,7 @@ async def _search_multiple(
 
     # Build result dictionary
     result_dict = {}
-    for term, result in zip(terms, results):
+    for term, result in zip(terms, results, strict=True):
         if isinstance(result, Exception):
             result_dict[term] = {
                 "found": False,
