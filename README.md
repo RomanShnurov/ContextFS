@@ -443,7 +443,7 @@ See [`docs/cloud-sync-guide.md`](docs/cloud-sync-guide.md) for detailed setup in
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/contextfs
+git clone https://github.com/RomanShnurov/ContextFS
 cd contextfs
 
 # Install with development dependencies (recommended)

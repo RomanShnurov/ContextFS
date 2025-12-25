@@ -6,7 +6,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
 authors = [
-    { name = "Your Name", email = "your@email.com" }
+    { name = "Roman Shnurov", email = "vegadeveil@gamil.com" }
 ]
 keywords = [
     "mcp",
@@ -52,10 +52,10 @@ dev = [
 contextfs = "contextfs.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/contextfs"
-Documentation = "https://github.com/yourusername/contextfs#readme"
-Repository = "https://github.com/yourusername/contextfs"
-Issues = "https://github.com/yourusername/contextfs/issues"
+Homepage = "https://github.com/RomanShnurov/ContextFS"
+Documentation = "https://github.com/RomanShnurov/ContextFS#readme"
+Repository = "https://github.com/RomanShnurov/ContextFS"
+Issues = "https://github.com/RomanShnurov/ContextFS/issues"
 
 [build-system]
 requires = ["hatchling"]
