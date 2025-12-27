@@ -57,23 +57,3 @@ jobs:
         with:
           files: ./coverage.xml
           flags: formats
-
-  docker-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Build test image
-        run: |
-          docker build -f Dockerfile.test -t contextfs-test .
-
-      - name: Run tests in Docker
-        run: |
-          docker run --rm contextfs-test
-
-      - name: Extract coverage report
-        run: |
-          docker run --rm -v $(pwd)/test-reports:/app/test-reports contextfs-test \
-            pytest tests/ -v --cov=src/contextfs --cov-report=html:/app/test-reports/coverage || true

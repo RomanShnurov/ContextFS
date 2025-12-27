@@ -225,3 +225,4 @@ test_docs/
 specs/
 config.yaml
 *.code-workspace
+.benchmarks/
