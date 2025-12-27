@@ -4,6 +4,7 @@ Quick health check for contextfs server.
 Just verifies the server starts and responds to basic requests.
 """
 
+import importlib.util
 import subprocess
 import sys
 import time
@@ -12,7 +13,7 @@ import time
 def check_dependency(command, name):
     """Check if a system dependency is available."""
     try:
-        result = subprocess.run(command, capture_output=True, text=True, shell=True, timeout=5)
+        subprocess.run(command, capture_output=True, text=True, shell=True, timeout=5, check=True)
         print(f"✅ {name} is installed")
         return True
     except Exception as e:
@@ -88,20 +89,16 @@ def main():
 
     # Check Python environment
     print("\n📦 Checking Python environment...")
-    try:
-        import mcp
-
+    if importlib.util.find_spec("mcp") is not None:
         print("✅ mcp package is installed")
-    except ImportError:
+    else:
         print("❌ mcp package is NOT installed")
         print("   Run: uv sync")
         all_ok = False
 
-    try:
-        import yaml
-
+    if importlib.util.find_spec("yaml") is not None:
         print("✅ yaml package is installed")
-    except ImportError:
+    else:
         print("❌ yaml package is NOT installed")
         print("   Run: uv sync")
         all_ok = False
@@ -109,7 +106,7 @@ def main():
     # Check config file
     print("\n📄 Checking configuration...")
     try:
-        with open("config.yaml") as f:
+        with open("config.yaml"):
             print("✅ config.yaml exists")
     except FileNotFoundError:
         print("❌ config.yaml NOT found")
@@ -129,9 +126,8 @@ def main():
         all_ok = False
 
     # Test server startup
-    if all_ok:
-        if not check_server_startup():
-            all_ok = False
+    if all_ok and not check_server_startup():
+        all_ok = False
 
     # Summary
     print("\n" + "=" * 60)

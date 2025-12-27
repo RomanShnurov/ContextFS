@@ -46,7 +46,7 @@ def validate_workflow(file_path):
         # Check for multi-arch builds in release
         if "release.yaml" in file_path:
             has_multiarch = False
-            for job_name, job in workflow.get("jobs", {}).items():
+            for _job_name, job in workflow.get("jobs", {}).items():
                 for step in job.get("steps", []):
                     if "platforms" in step.get("with", {}):
                         platforms = step["with"]["platforms"]

@@ -49,6 +49,7 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0",
     "python-docx>=1.0",
+    "pre-commit>=3.0",
 ]
 
 [project.scripts]
@@ -93,6 +94,10 @@ python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+exclude = [
+    "^tests/",
+    "^scripts/",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

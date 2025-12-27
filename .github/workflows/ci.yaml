@@ -102,7 +102,7 @@ jobs:
           echo "server:" >> /tmp/test-config/config.yaml
           echo "  host: localhost" >> /tmp/test-config/config.yaml
           echo "  port: 8000" >> /tmp/test-config/config.yaml
-          
+
           # Test that the container can start with config (will exit quickly)
           docker run --rm \
             -v /tmp/test-config:/config:ro \
