@@ -1,6 +1,7 @@
 """Tests for MCP resources functionality."""
 
 import json
+import sys
 
 import pytest
 
@@ -109,15 +110,23 @@ async def test_resources_filters_hidden_files(rich_knowledge_dir, rich_config):
 @pytest.mark.asyncio
 async def test_resources_collection_path_traversal_blocked(rich_config):
     """Test that path traversal attempts are blocked for collections."""
+    # Unix-style paths (work on all platforms)
     traversal_paths = [
         "../",
         "../../",
         "../../../etc",
         "games/../..",
         "games/../../etc/passwd",
-        "..\\..\\",  # Windows-style
-        "games\\..\\..\\",
     ]
+
+    # Windows-style paths (only work on Windows)
+    if sys.platform == "win32":
+        traversal_paths.extend(
+            [
+                "..\\..\\",
+                "games\\..\\..\\",
+            ]
+        )
 
     for path in traversal_paths:
         with pytest.raises(McpError) as exc_info:
@@ -131,12 +140,16 @@ async def test_resources_collection_path_traversal_blocked(rich_config):
 @pytest.mark.asyncio
 async def test_resources_document_path_traversal_blocked(rich_config):
     """Test that path traversal attempts are blocked for document info."""
+    # Unix-style paths (work on all platforms)
     traversal_paths = [
         "../secret.txt",
         "../../etc/passwd",
         "games/../../secret.md",
-        "..\\..\\secret.txt",  # Windows-style
     ]
+
+    # Windows-style paths (only work on Windows)
+    if sys.platform == "win32":
+        traversal_paths.append("..\\..\\secret.txt")
 
     for path in traversal_paths:
         with pytest.raises(McpError) as exc_info:

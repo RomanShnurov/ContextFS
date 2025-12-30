@@ -1,4 +1,4 @@
-name: Format Tests
+name: Integration - Document Formats
 
 on:
   push:

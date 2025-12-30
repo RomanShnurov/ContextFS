@@ -218,7 +218,7 @@ def server_params(rich_knowledge_dir: Path) -> StdioServerParameters:
     )
 
 
-@pytest_asyncio.fixture(loop_scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def mcp_session(server_params: StdioServerParameters) -> AsyncGenerator[ClientSession, None]:
     """Create and initialize MCP client session.
 
@@ -240,13 +240,17 @@ async def mcp_session(server_params: StdioServerParameters) -> AsyncGenerator[Cl
             assert result is not None
 
     Note:
-        This fixture may produce teardown errors due to a known limitation with
-        anyio TaskGroups and pytest-asyncio event loop management. Tests will
-        pass successfully despite these teardown warnings. This is a limitation
-        of the MCP stdio_client implementation with pytest async fixtures.
+        Suppresses anyio cancel scope errors during cleanup due to pytest-asyncio
+        event loop management. This is a known limitation of nested async context
+        managers with anyio TaskGroups.
     """
-    async with stdio_client(server_params) as streams:
-        read_stream, write_stream = streams
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-            yield session
+    try:
+        async with stdio_client(server_params) as streams:
+            read_stream, write_stream = streams
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                yield session
+    except RuntimeError as e:
+        # Suppress cancel scope errors during teardown
+        if "cancel scope" not in str(e):
+            raise
