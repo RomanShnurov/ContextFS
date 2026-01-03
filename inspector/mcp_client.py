@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import asyncio
-import io
 import json
 import logging
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any
 
 import nest_asyncio
 from mcp import ClientSession, StdioServerParameters
@@ -148,45 +147,10 @@ class MCPClientError(Exception):
     pass
 
 
-class LogCapturingTextIO(io.TextIOBase):
-    """TextIO wrapper that captures writes to LogCollector."""
-
-    def __init__(self, collector: LogCollector):
-        self.collector = collector
-        self._buffer = ""
-
-    def write(self, s: str) -> int:
-        if not s:
-            return 0
-
-        # Buffer and process line by line
-        self._buffer += s
-        while "\n" in self._buffer:
-            line, self._buffer = self._buffer.split("\n", 1)
-            if line.strip():
-                self.collector.server_log(line)
-
-        return len(s)
-
-    def flush(self) -> None:
-        # Flush remaining buffer
-        if self._buffer.strip():
-            self.collector.server_log(self._buffer)
-            self._buffer = ""
-
-    def readable(self) -> bool:
-        return False
-
-    def writable(self) -> bool:
-        return True
-
-    def seekable(self) -> bool:
-        return False
-
-
-def _get_errlog() -> TextIO:
-    """Get a TextIO that captures server logs."""
-    return LogCapturingTextIO(get_log_collector())
+# NOTE: Server stderr logging through custom TextIO doesn't work with stdio_client
+# because it requires a real file descriptor for subprocess communication.
+# Server logs will go to the terminal's stderr instead of being captured in the UI.
+# Client-side logs (connection, tool calls) are still captured through LogCollector.
 
 
 async def _list_tools(config: ServerConfig) -> list[ToolInfo]:
@@ -194,7 +158,7 @@ async def _list_tools(config: ServerConfig) -> list[ToolInfo]:
     collector = get_log_collector()
     collector.client_log("INFO", f"Connecting to server: {config.command} {' '.join(config.args)}")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         collector.client_log("DEBUG", "Connection established, initializing session...")
 
@@ -221,7 +185,7 @@ async def _call_tool(config: ServerConfig, name: str, args: dict[str, Any]) -> d
     collector.client_log("INFO", f"Calling tool: {name}")
     collector.client_log("DEBUG", f"Arguments: {json.dumps(args, ensure_ascii=False)}")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
@@ -254,7 +218,7 @@ async def _list_resources(config: ServerConfig) -> list[ResourceInfo]:
     collector = get_log_collector()
     collector.client_log("INFO", "Listing resources...")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
@@ -277,7 +241,7 @@ async def _read_resource(config: ServerConfig, uri: str) -> str:
     collector = get_log_collector()
     collector.client_log("INFO", f"Reading resource: {uri}")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
@@ -298,7 +262,7 @@ async def _list_prompts(config: ServerConfig) -> list[PromptInfo]:
     collector = get_log_collector()
     collector.client_log("INFO", "Listing prompts...")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
@@ -322,7 +286,7 @@ async def _get_prompt(
     collector = get_log_collector()
     collector.client_log("INFO", f"Getting prompt: {name}")
 
-    async with stdio_client(config.to_params(), errlog=_get_errlog()) as streams:
+    async with stdio_client(config.to_params()) as streams:
         read_stream, write_stream = streams
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
