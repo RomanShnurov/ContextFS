@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from contextfs.config import Config, KnowledgeConfig, SecurityConfig
-from contextfs.errors import ErrorCode, McpError
-from contextfs.security import FileAccessControl, FilterSecurity
+from fathom_mcp.config import Config, KnowledgeConfig, SecurityConfig
+from fathom_mcp.errors import ErrorCode, McpError
+from fathom_mcp.security import FileAccessControl, FilterSecurity
 
 
 class TestFileAccessControlErrors:

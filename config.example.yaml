@@ -1,4 +1,4 @@
-# ContextFS configuration
+# fathom-mcp configuration
 
 # Required: path to documents
 knowledge:
@@ -6,7 +6,7 @@ knowledge:
 
 # Optional: server settings
 server:
-  name: "ContextFS"
+  name: "fathom-mcp"
   log_level: "INFO"  # DEBUG | INFO | WARNING | ERROR
 
 # Optional: search settings
@@ -104,7 +104,7 @@ performance:
   enable_indexing: false               # Enable document indexing
   index_update_strategy: "auto"        # auto | manual | scheduled
   index_formats: [".pdf", ".md", ".txt"]  # File formats to include in index
-  index_path: ".cfs_index"             # Index storage path (relative to knowledge root)
+  index_path: ".FMCP_index"             # Index storage path (relative to knowledge root)
   rebuild_index_on_startup: false      # Rebuild index when server starts
 
   # File watching for automatic index updates
@@ -149,12 +149,12 @@ security:
   follow_symlinks: false            # Disallow following symbolic links
 
 # Environment variable overrides:
-# All settings can be overridden using environment variables with CFS_ prefix
+# All settings can be overridden using environment variables with FMCP_ prefix
 # Examples:
-#   CFS_KNOWLEDGE__ROOT=/path/to/docs
-#   CFS_SECURITY__ENABLE_SHELL_FILTERS=false
-#   CFS_SECURITY__FILTER_SECURITY_MODE=disabled
-#   CFS_SEARCH__MAX_RESULTS=100
-#   CFS_PERFORMANCE__ENABLE_INDEXING=true
-#   CFS_PERFORMANCE__ENABLE_FILE_WATCHING=true
-#   CFS_PERFORMANCE__ENABLE_PARALLEL_PDF=false
+#   FMCP_KNOWLEDGE__ROOT=/path/to/docs
+#   FMCP_SECURITY__ENABLE_SHELL_FILTERS=false
+#   FMCP_SECURITY__FILTER_SECURITY_MODE=disabled
+#   FMCP_SEARCH__MAX_RESULTS=100
+#   FMCP_PERFORMANCE__ENABLE_INDEXING=true
+#   FMCP_PERFORMANCE__ENABLE_FILE_WATCHING=true
+#   FMCP_PERFORMANCE__ENABLE_PARALLEL_PDF=false

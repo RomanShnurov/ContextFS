@@ -1,10 +1,10 @@
 # Cloud Storage Integration Guide
 
-This guide explains how to integrate cloud storage (Google Drive, Dropbox, OneDrive, S3, etc.) with the contextfs server.
+This guide explains how to integrate cloud storage (Google Drive, Dropbox, OneDrive, S3, etc.) with the fathom-mcp server.
 
 ## Why Sync is Outside the MCP Server
 
-The `contextfs` server is designed as a **read-only knowledge base** that provides AI clients with secure access to local documents. Cloud synchronization is intentionally **not** part of the MCP server for these reasons:
+The `fathom-mcp` server is designed as a **read-only knowledge base** that provides AI clients with secure access to local documents. Cloud synchronization is intentionally **not** part of the MCP server for these reasons:
 
 1. **Security**: Exposing sync tools to AI clients creates risks:
    - Data exfiltration to unauthorized locations
@@ -77,7 +77,7 @@ rclone mount gdrive:MyKnowledge /data/knowledge \
 
 **5. Start MCP server**
 ```bash
-contextfs --root /data/knowledge
+fathom-mcp --root /data/knowledge
 ```
 
 #### Mount Options Explained
@@ -140,7 +140,7 @@ Use official sync clients from cloud providers. Simplest option for casual use.
 
 **3. Start MCP server**
 ```bash
-contextfs --root ~/GoogleDrive/Knowledge
+fathom-mcp --root ~/GoogleDrive/Knowledge
 ```
 
 #### Dropbox
@@ -155,7 +155,7 @@ contextfs --root ~/GoogleDrive/Knowledge
 
 **3. Start MCP server**
 ```bash
-contextfs --root ~/Dropbox/Knowledge
+fathom-mcp --root ~/Dropbox/Knowledge
 ```
 
 #### OneDrive
@@ -170,7 +170,7 @@ contextfs --root ~/Dropbox/Knowledge
 
 **3. Start MCP server**
 ```bash
-contextfs --root ~/OneDrive/Knowledge
+fathom-mcp --root ~/OneDrive/Knowledge
 ```
 
 #### Advantages
@@ -396,7 +396,7 @@ rclone mount gdrive:Knowledge /data/knowledge --read-only --daemon
 
 **2. Run container**
 ```bash
-docker run -v /data/knowledge:/knowledge:ro contextfs
+docker run -v /data/knowledge:/knowledge:ro fathom-mcp
 ```
 
 ### With cloud client sync
@@ -408,7 +408,7 @@ docker run -v /data/knowledge:/knowledge:ro contextfs
 
 **2. Run container**
 ```bash
-docker run -v ~/Dropbox/Knowledge:/knowledge:ro contextfs
+docker run -v ~/Dropbox/Knowledge:/knowledge:ro fathom-mcp
 ```
 
 ### docker-compose example
@@ -417,8 +417,8 @@ docker run -v ~/Dropbox/Knowledge:/knowledge:ro contextfs
 version: "3.8"
 
 services:
-  contextfs:
-    image: contextfs:latest
+  fathom-mcp:
+    image: fathom-mcp:latest
     volumes:
       # Mount synced directory (managed outside container)
       - /data/knowledge:/knowledge:ro
@@ -516,7 +516,7 @@ rclone mount gdrive:Knowledge /data/knowledge --read-only
 
 **Docker**:
 ```bash
-docker run -v /data/knowledge:/knowledge:ro contextfs
+docker run -v /data/knowledge:/knowledge:ro fathom-mcp
 ```
 
 **rclone config**:

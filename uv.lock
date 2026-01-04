@@ -221,58 +221,6 @@ wheels = [
 ]
 
 [[package]]
-name = "contextfs"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "mcp" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pypdf" },
-    { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "python-docx" },
-    { name = "ruff" },
-    { name = "tenacity" },
-    { name = "types-pyyaml" },
-]
-inspector = [
-    { name = "nest-asyncio" },
-    { name = "streamlit" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mcp", specifier = ">=1.0.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
-    { name = "nest-asyncio", marker = "extra == 'inspector'", specifier = ">=1.6.0" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0" },
-    { name = "pydantic", specifier = ">=2.0" },
-    { name = "pydantic-settings", specifier = ">=2.0" },
-    { name = "pypdf", specifier = ">=4.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
-    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "python-docx", marker = "extra == 'dev'", specifier = ">=1.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "streamlit", marker = "extra == 'inspector'", specifier = ">=1.31.0" },
-    { name = "tenacity", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0" },
-]
-provides-extras = ["dev", "inspector"]
-
-[[package]]
 name = "coverage"
 version = "7.13.0"
 source = { registry = "https://pypi.org/simple" }
@@ -410,6 +358,58 @@ sdist = { url = "https://files.pythonhosted.org/packages/96/8e/709914eb2b5749865
 wheels = [
     { url = "https://files.pythonhosted.org/packages/33/6b/e0547afaf41bf2c42e52430072fa5658766e3d65bd4b03a563d1b6336f57/distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16", size = 469047, upload-time = "2025-07-17T16:51:58.613Z" },
 ]
+
+[[package]]
+name = "fathom-mcp"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "mcp" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pypdf" },
+    { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "python-docx" },
+    { name = "ruff" },
+    { name = "tenacity" },
+    { name = "types-pyyaml" },
+]
+inspector = [
+    { name = "nest-asyncio" },
+    { name = "streamlit" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mcp", specifier = ">=1.0.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
+    { name = "nest-asyncio", marker = "extra == 'inspector'", specifier = ">=1.6.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pydantic-settings", specifier = ">=2.0" },
+    { name = "pypdf", specifier = ">=4.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "python-docx", marker = "extra == 'dev'", specifier = ">=1.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "streamlit", marker = "extra == 'inspector'", specifier = ">=1.31.0" },
+    { name = "tenacity", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0" },
+]
+provides-extras = ["dev", "inspector"]
 
 [[package]]
 name = "filelock"

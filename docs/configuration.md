@@ -9,7 +9,7 @@ Complete reference for all configuration options.
 Configuration is loaded in this priority order:
 
 1. **CLI arguments** (`--root`, `--log-level`)
-2. **Environment variables** (prefix `CFS_`)
+2. **Environment variables** (prefix `FMCP_`)
 3. **Config file** (`config.yaml`)
 4. **Defaults**
 
@@ -19,10 +19,10 @@ All config options can be set via environment variables:
 
 ```bash
 # Nested keys use double underscore
-CFS_KNOWLEDGE__ROOT=/data/docs
-CFS_SERVER__LOG_LEVEL=DEBUG
-CFS_SEARCH__MAX_RESULTS=100
-CFS_SECURITY__FILTER_MODE=whitelist
+FMCP_KNOWLEDGE__ROOT=/data/docs
+FMCP_SERVER__LOG_LEVEL=DEBUG
+FMCP_SEARCH__MAX_RESULTS=100
+FMCP_SECURITY__FILTER_MODE=whitelist
 ```
 
 ---
@@ -52,7 +52,7 @@ knowledge:
 # === SERVER ===
 
 server:
-  name: "contextfs" # Server name (shown in MCP clients)
+  name: "fathom-mcp" # Server name (shown in MCP clients)
   version: "0.1.0"           # Server version
   log_level: "INFO"          # DEBUG | INFO | WARNING | ERROR
 
@@ -151,7 +151,7 @@ security:
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `name` | string | No | `contextfs` | Server name |
+| `name` | string | No | `fathom-mcp` | Server name |
 | `version` | string | No | `0.1.0` | Server version |
 | `log_level` | enum | No | `INFO` | Log level: DEBUG, INFO, WARNING, ERROR |
 
@@ -360,13 +360,13 @@ CLI arguments override config file:
 
 ```bash
 # Override root
-contextfs --root /other/path
+fathom-mcp --root /other/path
 
 # Override log level
-contextfs --log-level DEBUG
+fathom-mcp --log-level DEBUG
 
 # Both
-contextfs --config prod.yaml --log-level DEBUG
+fathom-mcp --config prod.yaml --log-level DEBUG
 ```
 
 ---

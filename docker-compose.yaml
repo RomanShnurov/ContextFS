@@ -1,8 +1,8 @@
 services:
-  contextfs:
+  fathom-mcp:
     build:
       context: .
-    image: contextfs:latest
+    image: fathom-mcp:latest
     volumes:
       # Mount documents as read-only for security
       - ./documents:/knowledge:ro

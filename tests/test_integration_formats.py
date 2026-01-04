@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from contextfs.config import Config, KnowledgeConfig
-from contextfs.search.ugrep import UgrepEngine
-from contextfs.tools.read import handle_read_tool
+from fathom_mcp.config import Config, KnowledgeConfig
+from fathom_mcp.search.ugrep import UgrepEngine
+from fathom_mcp.tools.read import handle_read_tool
 
 # Check which tools are available
 PANDOC_AVAILABLE = shutil.which("pandoc") is not None

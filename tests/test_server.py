@@ -1,7 +1,7 @@
 """Tests for server lifecycle and setup."""
 
-from contextfs.config import Config, KnowledgeConfig
-from contextfs.server import ServerContext, create_server, get_document_index, get_server_context
+from fathom_mcp.config import Config, KnowledgeConfig
+from fathom_mcp.server import ServerContext, create_server, get_document_index, get_server_context
 
 
 async def test_create_server(temp_knowledge_dir):
@@ -10,7 +10,7 @@ async def test_create_server(temp_knowledge_dir):
     server = await create_server(config)
 
     assert server is not None
-    assert server.name == "ContextFS"
+    assert server.name == "fathom-mcp"
 
 
 async def test_create_server_with_custom_name(temp_knowledge_dir):

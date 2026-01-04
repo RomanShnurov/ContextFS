@@ -1,4 +1,4 @@
-# ContextFS
+# Fathom MCP
 
 A Model Context Protocol server that provides AI assistants with direct access to local document collections through file-first search capabilities.
 
@@ -44,7 +44,7 @@ brew install ugrep poppler
 
 ## Supported Formats
 
-contextfs supports searching and reading multiple document formats:
+Fathom MCP supports searching and reading multiple document formats:
 
 ### Default Formats (No Additional Tools Required)
 - **Markdown** (.md, .markdown)
@@ -95,7 +95,7 @@ The knowledge root can be specified via:
 
 **Command-line argument** (recommended for static setups):
 ```bash
-contextfs --root /path/to/documents
+fathom-mcp --root /path/to/documents
 ```
 
 **Configuration file**:
@@ -106,7 +106,7 @@ knowledge:
 
 **Environment variable**:
 ```bash
-export CFS_KNOWLEDGE__ROOT=/path/to/documents
+export FMCP_KNOWLEDGE__ROOT=/path/to/documents
 ```
 
 ### Search Scopes
@@ -149,12 +149,12 @@ See [config.example.yaml](config.example.yaml) for all available options.
 
 ### Environment Variables
 
-All configuration options can be overridden using environment variables with the `CFS_` prefix:
+All configuration options can be overridden using environment variables with the `FMCP_` prefix:
 
 ```bash
-export CFS_KNOWLEDGE__ROOT=/path/to/documents
-export CFS_SEARCH__MAX_RESULTS=100
-export CFS_SECURITY__FILTER_MODE=whitelist
+export FMCP_KNOWLEDGE__ROOT=/path/to/documents
+export FMCP_SEARCH__MAX_RESULTS=100
+export FMCP_SECURITY__FILTER_MODE=whitelist
 ```
 
 Use double underscores (`__`) to denote nested configuration levels.
@@ -353,8 +353,8 @@ Add this to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "contextfs": {
-      "command": "contextfs",
+    "fathom-mcp": {
+      "command": "fathom-mcp",
       "args": ["--root", "/path/to/your/documents"]
     }
   }
@@ -368,8 +368,8 @@ For more complex setups, use a configuration file:
 ```json
 {
   "mcpServers": {
-    "contextfs": {
-      "command": "contextfs",
+    "fathom-mcp": {
+      "command": "fathom-mcp",
       "args": ["--config", "/path/to/config.yaml"]
     }
   }
@@ -383,13 +383,13 @@ When developing or running from source:
 ```json
 {
   "mcpServers": {
-    "contextfs": {
+    "fathom-mcp": {
       "command": "uv",
       "args": [
         "--directory",
-        "/path/to/contextfs",
+        "/path/to/fathom-mcp",
         "run",
-        "contextfs",
+        "fathom-mcp",
         "--root",
         "/path/to/documents"
       ]
@@ -430,16 +430,16 @@ The included `docker-compose.yaml` provides:
 
 ```bash
 # Build image
-docker build -t contextfs .
+docker build -t fathom-mcp .
 
 # Run with read-only mount
-docker run -v /path/to/docs:/knowledge:ro contextfs
+docker run -v /path/to/docs:/knowledge:ro fathom-mcp
 
 # Run with custom configuration
 docker run \
   -v /path/to/docs:/knowledge:ro \
   -v /path/to/config.yaml:/config/config.yaml:ro \
-  contextfs
+  fathom-mcp
 ```
 
 ## Cloud Storage Integration
@@ -474,8 +474,8 @@ See [`docs/cloud-sync-guide.md`](docs/cloud-sync-guide.md) for detailed setup in
 
 ```bash
 # Clone repository
-git clone https://github.com/RomanShnurov/ContextFS
-cd contextfs
+git clone https://github.com/RomanShnurov/fathom-mcp
+cd fathom-mcp
 
 # Install with development dependencies (recommended)
 uv sync --extra dev
@@ -543,11 +543,11 @@ security:
 
 ## Debugging
 
-Since MCP servers run over stdio, debugging can be challenging. contextfs provides two options for interactive testing.
+Since MCP servers run over stdio, debugging can be challenging. Fathom MCP provides two options for interactive testing.
 
 ### Built-in MCP Inspector (Recommended)
 
-contextfs includes a Streamlit-based inspector UI for testing server tools, resources, and prompts:
+Fathom MCP includes a Streamlit-based inspector UI for testing server tools, resources, and prompts:
 
 ```bash
 # Install inspector dependencies
@@ -569,13 +569,13 @@ The built-in Inspector provides:
 Alternatively, use the official [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 
 ```bash
-npx @modelcontextprotocol/inspector contextfs --root /path/to/documents
+npx @modelcontextprotocol/inspector fathom-mcp --root /path/to/documents
 ```
 
 You can also use it with configuration files:
 
 ```bash
-npx @modelcontextprotocol/inspector contextfs --config config.yaml
+npx @modelcontextprotocol/inspector fathom-mcp --config config.yaml
 ```
 
 ## Contributing

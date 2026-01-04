@@ -10,8 +10,8 @@ import pytest_asyncio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from contextfs.config import Config, KnowledgeConfig
-from contextfs.search.ugrep import UgrepEngine
+from fathom_mcp.config import Config, KnowledgeConfig
+from fathom_mcp.search.ugrep import UgrepEngine
 
 
 @pytest.fixture
@@ -201,7 +201,7 @@ def markdown_file(test_documents: Path) -> Path:
 
 @pytest.fixture
 def server_params(rich_knowledge_dir: Path) -> StdioServerParameters:
-    """Create StdioServerParameters for connecting to contextfs server.
+    """Create StdioServerParameters for connecting to Fathom MCP server.
 
     Args:
         rich_knowledge_dir: Path to test knowledge directory
@@ -213,7 +213,7 @@ def server_params(rich_knowledge_dir: Path) -> StdioServerParameters:
 
     return StdioServerParameters(
         command="uv",
-        args=["run", "contextfs", "--root", str(rich_knowledge_dir)],
+        args=["run", "fathom-mcp", "--root", str(rich_knowledge_dir)],
         cwd=str(project_root),
     )
 

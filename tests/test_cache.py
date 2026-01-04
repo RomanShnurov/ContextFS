@@ -4,8 +4,8 @@ import asyncio
 
 import pytest
 
-from contextfs.search.cache import SearchCache, SmartSearchCache
-from contextfs.search.ugrep import SearchResult, UgrepEngine
+from fathom_mcp.search.cache import SearchCache, SmartSearchCache
+from fathom_mcp.search.ugrep import SearchResult, UgrepEngine
 
 # ============================================================================
 # SearchCache Tests

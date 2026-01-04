@@ -2,7 +2,7 @@
 
 import pytest
 
-from contextfs.prompts import (
+from fathom_mcp.prompts import (
     _answer_question_prompt,
     _compare_documents_prompt,
     _summarize_document_prompt,

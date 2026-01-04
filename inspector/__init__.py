@@ -1,1 +1,1 @@
-"""MCP Inspector - Streamlit UI for testing contextfs MCP server."""
+"""MCP Inspector - Streamlit UI for testing fathom-mcp MCP server."""

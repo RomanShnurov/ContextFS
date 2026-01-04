@@ -1,4 +1,4 @@
-"""Security controls for ContextFS server."""
+"""Security controls for fathom-mcp server."""
 
 import asyncio
 import logging

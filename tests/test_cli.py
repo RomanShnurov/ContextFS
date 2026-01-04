@@ -6,14 +6,14 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from contextfs.__main__ import main
+from fathom_mcp.__main__ import main
 
 
 def test_main_requires_ugrep():
     """Test that main exits if ugrep is not installed."""
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=False):
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=False):
         with pytest.raises(SystemExit) as exc_info:
-            with patch.object(sys, "argv", ["contextfs", "--root", "/tmp"]):
+            with patch.object(sys, "argv", ["fathom-mcp", "--root", "/tmp"]):
                 main()
 
         assert exc_info.value.code == 1
@@ -21,12 +21,12 @@ def test_main_requires_ugrep():
 
 def test_main_with_invalid_config():
     """Test that main exits with error for invalid config."""
-    from contextfs.config import ConfigError
+    from fathom_mcp.config import ConfigError
 
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.load_config", side_effect=ConfigError("Config error")):
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.load_config", side_effect=ConfigError("Config error")):
             with pytest.raises(SystemExit) as exc_info:
-                with patch.object(sys, "argv", ["contextfs", "--config", "invalid.yaml"]):
+                with patch.object(sys, "argv", ["fathom-mcp", "--config", "invalid.yaml"]):
                     main()
 
             assert exc_info.value.code == 1
@@ -34,10 +34,10 @@ def test_main_with_invalid_config():
 
 def test_main_with_root_argument(temp_knowledge_dir):
     """Test main with --root argument."""
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.run_server", new_callable=AsyncMock):
-            with patch("contextfs.__main__.asyncio.run") as mock_asyncio_run:
-                with patch.object(sys, "argv", ["contextfs", "--root", str(temp_knowledge_dir)]):
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.run_server", new_callable=AsyncMock):
+            with patch("fathom_mcp.__main__.asyncio.run") as mock_asyncio_run:
+                with patch.object(sys, "argv", ["fathom-mcp", "--root", str(temp_knowledge_dir)]):
                     main()
 
                 # Verify asyncio.run was called with run_server
@@ -55,10 +55,10 @@ knowledge:
 """
     )
 
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.run_server", new_callable=AsyncMock):
-            with patch("contextfs.__main__.asyncio.run") as mock_asyncio_run:
-                with patch.object(sys, "argv", ["contextfs", "--config", str(config_file)]):
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.run_server", new_callable=AsyncMock):
+            with patch("fathom_mcp.__main__.asyncio.run") as mock_asyncio_run:
+                with patch.object(sys, "argv", ["fathom-mcp", "--config", str(config_file)]):
                     main()
 
                 mock_asyncio_run.assert_called_once()
@@ -68,14 +68,14 @@ def test_main_with_log_level_argument(temp_knowledge_dir):
     """Test main with --log-level argument."""
     import logging
 
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.run_server", new_callable=AsyncMock):
-            with patch("contextfs.__main__.asyncio.run"):
-                with patch("contextfs.__main__.logging.basicConfig") as mock_logging:
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.run_server", new_callable=AsyncMock):
+            with patch("fathom_mcp.__main__.asyncio.run"):
+                with patch("fathom_mcp.__main__.logging.basicConfig") as mock_logging:
                     with patch.object(
                         sys,
                         "argv",
-                        ["contextfs", "--root", str(temp_knowledge_dir), "--log-level", "DEBUG"],
+                        ["fathom-mcp", "--root", str(temp_knowledge_dir), "--log-level", "DEBUG"],
                     ):
                         main()
 
@@ -88,11 +88,11 @@ def test_main_with_log_level_argument(temp_knowledge_dir):
 def test_main_handles_keyboard_interrupt(temp_knowledge_dir):
     """Test that main handles KeyboardInterrupt gracefully."""
     with (
-        patch("contextfs.__main__.check_ugrep_installed", return_value=True),
-        patch("contextfs.__main__.asyncio.run", side_effect=KeyboardInterrupt) as mock_asyncio_run,
+        patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True),
+        patch("fathom_mcp.__main__.asyncio.run", side_effect=KeyboardInterrupt) as mock_asyncio_run,
     ):
         # Should not raise, just exit gracefully
-        with patch.object(sys, "argv", ["contextfs", "--root", str(temp_knowledge_dir)]):
+        with patch.object(sys, "argv", ["fathom-mcp", "--root", str(temp_knowledge_dir)]):
             main()
 
         mock_asyncio_run.assert_called_once()
@@ -112,15 +112,15 @@ knowledge:
 """
     )
 
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.run_server", new_callable=AsyncMock) as mock_run:
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.run_server", new_callable=AsyncMock) as mock_run:
             with (
-                patch("contextfs.__main__.asyncio.run"),
+                patch("fathom_mcp.__main__.asyncio.run"),
                 patch.object(
                     sys,
                     "argv",
                     [
-                        "contextfs",
+                        "fathom-mcp",
                         "--config",
                         str(config_file),
                         "--root",
@@ -138,10 +138,10 @@ knowledge:
 
 def test_main_creates_minimal_config_with_root_only(temp_knowledge_dir):
     """Test that main creates minimal config when only --root is provided."""
-    with patch("contextfs.__main__.check_ugrep_installed", return_value=True):
-        with patch("contextfs.__main__.run_server", new_callable=AsyncMock) as mock_run:
-            with patch("contextfs.__main__.asyncio.run"):
-                with patch.object(sys, "argv", ["contextfs", "--root", str(temp_knowledge_dir)]):
+    with patch("fathom_mcp.__main__.check_ugrep_installed", return_value=True):
+        with patch("fathom_mcp.__main__.run_server", new_callable=AsyncMock) as mock_run:
+            with patch("fathom_mcp.__main__.asyncio.run"):
+                with patch.object(sys, "argv", ["fathom-mcp", "--root", str(temp_knowledge_dir)]):
                     main()
 
             # Verify config was created with the provided root

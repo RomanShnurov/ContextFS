@@ -5,8 +5,8 @@ import sys
 
 import pytest
 
-from contextfs.errors import ErrorCode, McpError
-from contextfs.resources import (
+from fathom_mcp.errors import ErrorCode, McpError
+from fathom_mcp.resources import (
     _get_collection_index,
     _get_document_info_resource,
     _get_root_index,

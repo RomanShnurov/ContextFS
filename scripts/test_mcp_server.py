@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Interactive test script for contextfs server.
+Interactive test script for fathom-mcp server.
 Tests all MCP tools by sending JSON-RPC requests via stdio.
 """
 
@@ -22,7 +22,7 @@ class MCPClient:
         self.process = await asyncio.create_subprocess_exec(
             "uv",
             "run",
-            "contextfs",
+            "fathom-mcp",
             "--config",
             config_path,
             stdin=asyncio.subprocess.PIPE,
@@ -277,7 +277,7 @@ async def run_tests():
 if __name__ == "__main__":
     print("""
 ╔══════════════════════════════════════════════════════════╗
-║         ContextFS - Test Suite          ║
+║         fathom-mcp - Test Suite          ║
 ╚══════════════════════════════════════════════════════════╝
 """)
     asyncio.run(run_tests())

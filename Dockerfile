@@ -42,15 +42,15 @@ ENV PYTHONPATH="/home/app/app/src"
 
 # Default knowledge directory (read-only recommended)
 VOLUME /knowledge
-ENV CFS_KNOWLEDGE__ROOT=/knowledge
+ENV FMCP_KNOWLEDGE__ROOT=/knowledge
 
 # Config mount point
 VOLUME /config
 
 # Entry point
-ENTRYPOINT ["python", "-m", "contextfs"]
+ENTRYPOINT ["python", "-m", "fathom_mcp"]
 CMD ["--config", "/config/config.yaml"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import contextfs; print('OK')" || exit 1
+  CMD python -c "import fathom_mcp; print('OK')" || exit 1
