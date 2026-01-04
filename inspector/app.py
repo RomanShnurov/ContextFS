@@ -1,4 +1,4 @@
-"""MCP Inspector - Streamlit UI for testing contextfs MCP server.
+"""MCP Inspector - Streamlit UI for testing fathom-mcp MCP server.
 
 Run with: streamlit run inspector/app.py
 """
@@ -24,7 +24,7 @@ from mcp_client import (
 
 # Page configuration
 st.set_page_config(
-    page_title="contextfs MCP Inspector",
+    page_title="fathom-mcp MCP Inspector",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -43,8 +43,8 @@ def main() -> None:
     render_sidebar()
 
     # Main content area
-    st.title("🔍 contextfs MCP Inspector")
-    st.markdown("Test and inspect the contextfs MCP server tools, resources, and prompts.")
+    st.title("🔍 fathom-mcp MCP Inspector")
+    st.markdown("Test and inspect the fathom-mcp MCP server tools, resources, and prompts.")
 
     # Create tabs
     tab_tools, tab_resources, tab_prompts, tab_logs = st.tabs(

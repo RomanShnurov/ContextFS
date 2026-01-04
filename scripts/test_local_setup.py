@@ -25,7 +25,7 @@ def test_local_build():
     # Test module import
     print("\n🔄 Testing module import...")
     result = subprocess.run(
-        [sys.executable, "-c", "import contextfs; print('✅ Module import successful')"],
+        [sys.executable, "-c", "import fathom_mcp; print('✅ Module import successful')"],
         capture_output=True,
         text=True,
     )
@@ -38,7 +38,7 @@ def test_local_build():
     # Test CLI
     print("\n🔄 Testing CLI...")
     result = subprocess.run(
-        [sys.executable, "-m", "contextfs", "--help"], capture_output=True, text=True
+        [sys.executable, "-m", "fathom-mcp", "--help"], capture_output=True, text=True
     )
     if result.returncode == 0:
         print("✅ CLI works correctly")

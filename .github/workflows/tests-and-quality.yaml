@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          tags: contextfs:latest
+          tags: fathom-mcp:latest
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -84,13 +84,13 @@ jobs:
       - name: Verify Docker image exists
         run: |
           echo "Checking if Docker image was built successfully..."
-          docker images | grep contextfs || (echo "ERROR: contextfs image not found!" && exit 1)
+          docker images | grep fathom-mcp || (echo "ERROR: fathom-mcp image not found!" && exit 1)
           echo "Docker image found successfully"
 
       - name: Test Docker image help
         run: |
           echo "Testing Docker image help command..."
-          docker run --rm contextfs:latest --help
+          docker run --rm fathom-mcp:latest --help
 
       - name: Test Docker image basic functionality
         run: |
@@ -106,4 +106,4 @@ jobs:
           # Test that the container can start with config (will exit quickly)
           docker run --rm \
             -v /tmp/test-config:/config:ro \
-            contextfs:latest --config /config/config.yaml --help
+            fathom-mcp:latest --config /config/config.yaml --help

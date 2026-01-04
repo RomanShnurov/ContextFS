@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from contextfs.errors import ErrorCode, McpError
-from contextfs.tools.read import _get_document_info, _read_document
+from fathom_mcp.errors import ErrorCode, McpError
+from fathom_mcp.tools.read import _get_document_info, _read_document
 
 
 @pytest.mark.asyncio

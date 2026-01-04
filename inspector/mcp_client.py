@@ -1,4 +1,4 @@
-"""MCP client wrapper for contextfs server."""
+"""MCP client wrapper for fathom-mcp server."""
 
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ def get_log_collector() -> LogCollector:
 
 @dataclass
 class ServerConfig:
-    """Configuration for connecting to contextfs MCP server."""
+    """Configuration for connecting to fathom-mcp MCP server."""
 
     root_path: str
     command: str = "uv"
@@ -98,12 +98,12 @@ class ServerConfig:
 
     def __post_init__(self) -> None:
         if not self.working_dir:
-            # Use the contextfs project directory
+            # Use the fathom-mcp project directory
             self.working_dir = str(Path(__file__).parent.parent)
 
     @property
     def args(self) -> list[str]:
-        return ["run", "contextfs", "--root", self.root_path]
+        return ["run", "fathom-mcp", "--root", self.root_path]
 
     def to_params(self) -> StdioServerParameters:
         return StdioServerParameters(

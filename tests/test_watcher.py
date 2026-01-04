@@ -7,7 +7,7 @@ import pytest
 # Skip all tests if watchfiles is not installed
 pytest.importorskip("watchfiles")
 
-from contextfs.search.watcher import FileWatcher, WatcherManager  # noqa: E402
+from fathom_mcp.search.watcher import FileWatcher, WatcherManager  # noqa: E402
 
 
 @pytest.fixture

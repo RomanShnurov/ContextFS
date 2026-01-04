@@ -39,24 +39,26 @@ def main():
 
     # Test 1: Build with cache
     if not run_command(
-        "docker build -t contextfs:test .", "Building Docker image (first build - will be slower)"
+        "docker build -t fathom-mcp:test .", "Building Docker image (first build - will be slower)"
     ):
         return 1
 
     # Test 2: Rebuild to test layer caching
     if not run_command(
-        "docker build -t contextfs:test .",
+        "docker build -t fathom-mcp:test .",
         "Rebuilding Docker image (should be faster due to caching)",
     ):
         return 1
 
     # Test 3: Test health check
-    if not run_command("docker run --rm contextfs:test --help", "Testing container runs correctly"):
+    if not run_command(
+        "docker run --rm fathom-mcp:test --help", "Testing container runs correctly"
+    ):
         return 1
 
     # Test 4: Check health check is configured
     if not run_command(
-        "docker inspect contextfs:test --format='{{.Config.Healthcheck}}'",
+        "docker inspect fathom-mcp:test --format='{{.Config.Healthcheck}}'",
         "Verifying health check configuration",
     ):
         return 1
@@ -64,7 +66,7 @@ def main():
     # Test 5: Test with mounted config
     print("\n🔄 Testing with mounted configuration")
     if not run_command(
-        "docker run --rm -v ./config.example.yaml:/config/config.yaml:ro contextfs:test --config /config/config.yaml --help",
+        "docker run --rm -v ./config.example.yaml:/config/config.yaml:ro fathom-mcp:test --config /config/config.yaml --help",
         "Testing with mounted config file",
     ):
         return 1

@@ -4,7 +4,7 @@ import asyncio
 
 import pytest
 
-from contextfs.search.index import DocumentIndex
+from fathom_mcp.search.index import DocumentIndex
 
 
 @pytest.fixture

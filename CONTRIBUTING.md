@@ -1,6 +1,6 @@
-# Contributing to contextfs
+# Contributing to fathom-mcp
 
-Thank you for your interest in contributing to contextfs! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to fathom-mcp! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -21,8 +21,8 @@ This project follows a standard code of conduct. Please be respectful and profes
 1. **Fork and clone the repository:**
 
 ```bash
-git clone https://github.com/RomanShnurov/ContextFS.git
-cd contextfs
+git clone https://github.com/RomanShnurov/fathom-mcp.git
+cd fathom-mcp
 ```
 
 2. **Install system dependencies:**
@@ -64,38 +64,6 @@ uv run mypy src
 ```
 
 ## Development Workflow
-
-### Project Structure
-
-```
-contextfs/
-├── src/file_knowledge_mcp/     # Main package
-│   ├── __init__.py
-│   ├── __main__.py             # CLI entry point
-│   ├── config.py               # Configuration system
-│   ├── errors.py               # Error definitions
-│   ├── security.py             # Security controls
-│   ├── server.py               # MCP server
-│   ├── tools/                  # MCP tools
-│   │   ├── __init__.py
-│   │   ├── browse.py           # list_collections, find_document
-│   │   ├── search.py           # search_documents, search_multiple
-│   │   └── read.py             # read_document, get_document_info
-│   └── search/                 # Search engine
-│       ├── __init__.py
-│       └── ugrep.py            # ugrep wrapper
-├── tests/                      # Test suite
-│   ├── conftest.py             # Pytest fixtures
-│   ├── test_config.py
-│   ├── test_browse.py
-│   ├── test_search.py
-│   └── test_read.py
-├── docs/                       # Documentation
-├── specs/                      # Design specs
-├── pyproject.toml              # Project config
-├── config.example.yaml         # Example config
-└── README.md
-```
 
 ### Making Changes
 
@@ -564,4 +532,4 @@ Contributors will be recognized in:
 - Release notes
 - CHANGELOG.md (for significant contributions)
 
-Thank you for contributing to contextfs!
+Thank you for contributing to fathom-mcp!

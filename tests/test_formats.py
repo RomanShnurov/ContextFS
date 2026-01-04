@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from contextfs.config import Config, KnowledgeConfig
-from contextfs.search.ugrep import UgrepEngine
+from fathom_mcp.config import Config, KnowledgeConfig
+from fathom_mcp.search.ugrep import UgrepEngine
 
 
 @pytest.mark.asyncio
@@ -266,7 +266,7 @@ async def test_supported_extensions_includes_new_formats(tmp_path):
 @pytest.mark.asyncio
 async def test_read_with_filter_docx(tmp_path):
     """Test reading DOCX with filter (mocked)."""
-    from contextfs.tools.read import _read_with_filter
+    from fathom_mcp.tools.read import _read_with_filter
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -279,7 +279,7 @@ async def test_read_with_filter_docx(tmp_path):
     filter_cmd = "pandoc --wrap=preserve -f docx -t plain % -o -"
 
     # Mock FilterSecurity.run_secure_filter
-    with patch("contextfs.security.FilterSecurity.run_secure_filter") as mock_filter:
+    with patch("fathom_mcp.security.FilterSecurity.run_secure_filter") as mock_filter:
         mock_filter.return_value = b"Extracted text from DOCX"
 
         # Read document
@@ -294,8 +294,8 @@ async def test_read_with_filter_docx(tmp_path):
 async def test_read_with_filter_timeout(tmp_path):
     """Test filter timeout handling."""
 
-    from contextfs.errors import McpError
-    from contextfs.tools.read import _read_with_filter
+    from fathom_mcp.errors import McpError
+    from fathom_mcp.tools.read import _read_with_filter
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -306,7 +306,7 @@ async def test_read_with_filter_timeout(tmp_path):
     filter_cmd = "pandoc --wrap=preserve -f docx -t plain % -o -"
 
     # Mock timeout
-    with patch("contextfs.security.FilterSecurity.run_secure_filter") as mock_filter:
+    with patch("fathom_mcp.security.FilterSecurity.run_secure_filter") as mock_filter:
         mock_filter.side_effect = TimeoutError()
 
         # Should raise MCP error
@@ -319,8 +319,8 @@ async def test_read_with_filter_timeout(tmp_path):
 @pytest.mark.asyncio
 async def test_read_with_filter_execution_error(tmp_path):
     """Test filter execution error handling."""
-    from contextfs.errors import McpError
-    from contextfs.tools.read import _read_with_filter
+    from fathom_mcp.errors import McpError
+    from fathom_mcp.tools.read import _read_with_filter
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -331,7 +331,7 @@ async def test_read_with_filter_execution_error(tmp_path):
     filter_cmd = "pandoc --wrap=preserve -f docx -t plain % -o -"
 
     # Mock execution error
-    with patch("contextfs.security.FilterSecurity.run_secure_filter") as mock_filter:
+    with patch("fathom_mcp.security.FilterSecurity.run_secure_filter") as mock_filter:
         mock_filter.side_effect = Exception("Command failed")
 
         # Should raise MCP error
@@ -344,7 +344,7 @@ async def test_read_with_filter_execution_error(tmp_path):
 @pytest.mark.asyncio
 async def test_read_document_docx(tmp_path):
     """Test reading DOCX via _read_document."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -354,7 +354,7 @@ async def test_read_document_docx(tmp_path):
     config.formats["word_docx"].enabled = True
 
     # Mock filter execution
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = "DOCX content extracted"
 
         # Read document
@@ -368,7 +368,7 @@ async def test_read_document_docx(tmp_path):
 @pytest.mark.asyncio
 async def test_read_document_html(tmp_path):
     """Test reading HTML with filter."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -378,7 +378,7 @@ async def test_read_document_html(tmp_path):
     config.formats["html"].enabled = True
 
     # Mock filter execution
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = "# Test\n"
 
         # Read document
@@ -392,7 +392,7 @@ async def test_read_document_html(tmp_path):
 @pytest.mark.asyncio
 async def test_read_document_json(tmp_path):
     """Test reading JSON with jq filter."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -402,7 +402,7 @@ async def test_read_document_json(tmp_path):
     config.formats["json"].enabled = True
 
     # Mock filter execution
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = '{"name":"test","value":123}'
 
         # Read document
@@ -417,7 +417,7 @@ async def test_read_document_json(tmp_path):
 @pytest.mark.asyncio
 async def test_read_document_truncation(tmp_path):
     """Test content truncation for large documents."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -428,7 +428,7 @@ async def test_read_document_truncation(tmp_path):
     config.limits.max_document_read_chars = 100  # Small limit
 
     # Mock filter returning large content
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = "x" * 200  # 200 characters
 
         # Read document
@@ -442,7 +442,7 @@ async def test_read_document_truncation(tmp_path):
 @pytest.mark.asyncio
 async def test_get_document_info_docx(tmp_path):
     """Test getting document info for DOCX."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -452,7 +452,7 @@ async def test_get_document_info_docx(tmp_path):
     config.formats["word_docx"].enabled = True
 
     # Mock filter execution
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = "Test document content here. " * 100  # ~300 words
 
         # Get info
@@ -468,7 +468,7 @@ async def test_get_document_info_docx(tmp_path):
 @pytest.mark.asyncio
 async def test_get_document_info_csv(tmp_path):
     """Test getting document info for CSV (no filter)."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -487,7 +487,7 @@ async def test_get_document_info_csv(tmp_path):
 @pytest.mark.asyncio
 async def test_validate_filter_output_empty():
     """Test _validate_filter_output with empty output."""
-    from contextfs.tools.read import _validate_filter_output
+    from fathom_mcp.tools.read import _validate_filter_output
 
     result = _validate_filter_output(b"", ".docx")
     assert result == ""
@@ -496,7 +496,7 @@ async def test_validate_filter_output_empty():
 @pytest.mark.asyncio
 async def test_validate_filter_output_invalid_utf8():
     """Test _validate_filter_output with invalid UTF-8."""
-    from contextfs.tools.read import _validate_filter_output
+    from fathom_mcp.tools.read import _validate_filter_output
 
     # Invalid UTF-8 bytes
     invalid_bytes = b"\xff\xfe Invalid UTF-8"
@@ -510,7 +510,7 @@ async def test_validate_filter_output_invalid_utf8():
 @pytest.mark.asyncio
 async def test_read_with_filter_streaming_large_file(tmp_path):
     """Test streaming for large files (>50MB)."""
-    from contextfs.tools.read import _read_with_filter
+    from fathom_mcp.tools.read import _read_with_filter
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -522,7 +522,7 @@ async def test_read_with_filter_streaming_large_file(tmp_path):
     filter_cmd = "pandoc --wrap=preserve -f docx -t plain % -o -"
 
     # Mock the streaming function
-    with patch("contextfs.tools.read._read_with_filter_streaming") as mock_stream:
+    with patch("fathom_mcp.tools.read._read_with_filter_streaming") as mock_stream:
         mock_stream.return_value = "Streamed content"
 
         # Read document (should use streaming)
@@ -536,7 +536,7 @@ async def test_read_with_filter_streaming_large_file(tmp_path):
 @pytest.mark.asyncio
 async def test_read_document_page_selection_warning(tmp_path):
     """Test that page selection for non-PDF shows warning."""
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(tmp_path)))
 
@@ -546,7 +546,7 @@ async def test_read_document_page_selection_warning(tmp_path):
     config.formats["word_docx"].enabled = True
 
     # Mock filter execution
-    with patch("contextfs.tools.read._read_with_filter") as mock_read:
+    with patch("fathom_mcp.tools.read._read_with_filter") as mock_read:
         mock_read.return_value = "DOCX content"
 
         # Try to read specific pages (not supported for DOCX)
@@ -607,7 +607,7 @@ async def test_read_real_html(sample_html):
     if not shutil.which("pandoc"):
         pytest.skip("pandoc not installed")
 
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(sample_html.parent)))
     config.formats["html"].enabled = True
@@ -631,7 +631,7 @@ async def test_read_real_json(sample_json):
     if not shutil.which("jq"):
         pytest.skip("jq not installed")
 
-    from contextfs.tools.read import handle_read_tool
+    from fathom_mcp.tools.read import handle_read_tool
 
     config = Config(knowledge=KnowledgeConfig(root=str(sample_json.parent)))
     config.formats["json"].enabled = True

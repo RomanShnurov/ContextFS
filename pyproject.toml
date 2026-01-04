@@ -1,12 +1,12 @@
 [project]
-name = "contextfs"
+name = "fathom-mcp"
 version = "0.1.0"
 description = "File-first knowledge base MCP server with ugrep search"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
 authors = [
-    { name = "Roman Shnurov", email = "vegadeveil@gamil.com" }
+    { name = "Roman Shnurov", email = "vegadeveil@gmail.com" }
 ]
 keywords = [
     "mcp",
@@ -58,20 +58,20 @@ inspector = [
 ]
 
 [project.scripts]
-contextfs = "contextfs.__main__:main"
+fathom-mcp = "fathom_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/RomanShnurov/ContextFS"
-Documentation = "https://github.com/RomanShnurov/ContextFS#readme"
-Repository = "https://github.com/RomanShnurov/ContextFS"
-Issues = "https://github.com/RomanShnurov/ContextFS/issues"
+Homepage = "https://github.com/RomanShnurov/fathom-mcp"
+Documentation = "https://github.com/RomanShnurov/fathom-mcp#readme"
+Repository = "https://github.com/RomanShnurov/fathom-mcp"
+Issues = "https://github.com/RomanShnurov/fathom-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/contextfs"]
+packages = ["src/fathom_mcp"]
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -95,7 +95,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["contextfs"]
+known-first-party = ["fathom_mcp"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -117,7 +117,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src/contextfs"]
+source = ["src/fathom_mcp"]
 branch = true
 
 [tool.coverage.report]

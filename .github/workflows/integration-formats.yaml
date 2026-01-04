@@ -53,7 +53,7 @@ jobs:
 
       - name: Run format tests
         run: |
-          uv run pytest tests/test_formats.py -v --cov=src/contextfs || true
+          uv run pytest tests/test_formats.py -v --cov=src/fathom_mcp || true
 
       - name: Run integration tests
         run: |
